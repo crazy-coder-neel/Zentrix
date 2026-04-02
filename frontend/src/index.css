@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+
+  --color-background: #0e0e0e;
+  --color-surface: #0e0e0e;
+  --color-surface-dim: #0e0e0e;
+  --color-surface-bright: #2c2c2c;
+  --color-surface-variant: #262626;
+  --color-surface-container: #1a1a1a;
+  --color-surface-container-low: #131313;
+  --color-surface-container-high: #20201f;
+  --color-surface-container-highest: #262626;
+  --color-surface-container-lowest: #000000;
+  --color-surface-tint: #ff8f6f;
+
+  --color-primary: #ff8f6f;
+  --color-primary-dim: #ff734a;
+  --color-primary-fixed: #ff7851;
+  --color-primary-fixed-dim: #ff5d2b;
+  --color-primary-container: #ff7851;
+  --color-on-primary: #5c1400;
+  --color-on-primary-fixed: #000000;
+  --color-on-primary-fixed-variant: #581300;
+  --color-on-primary-container: #470e00;
+  --color-inverse-primary: #b12f00;
+
+  --color-secondary: #fdd34d;
+  --color-secondary-dim: #eec540;
+  --color-secondary-fixed: #fdd34d;
+  --color-secondary-fixed-dim: #eec540;
+  --color-secondary-container: #735c00;
+  --color-on-secondary: #5c4900;
+  --color-on-secondary-fixed: #463600;
+  --color-on-secondary-fixed-variant: #675200;
+  --color-on-secondary-container: #fff7e9;
+
+  --color-tertiary: #fbfbe2;
+  --color-tertiary-dim: #e7e7ce;
+  --color-tertiary-fixed: #f5f5dc;
+  --color-tertiary-fixed-dim: #e7e7ce;
+  --color-tertiary-container: #ecedd4;
+  --color-on-tertiary: #5f604d;
+  --color-on-tertiary-fixed: #494b39;
+  --color-on-tertiary-fixed-variant: #666854;
+  --color-on-tertiary-container: #575845;
+
+  --color-error: #ff716c;
+  --color-error-dim: #d7383b;
+  --color-error-container: #9f0519;
+  --color-on-error: #490006;
+  --color-on-error-container: #ffa8a3;
+
+  --color-on-background: #ffffff;
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #adaaaa;
+  --color-inverse-on-surface: #565555;
+  --color-inverse-surface: #fcf9f8;
+
+  --color-outline: #767575;
+  --color-outline-variant: #484847;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, .font-headline {
+  font-family: var(--font-headline);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+@utility glass-card {
+  background: rgba(38, 38, 38, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+@utility glow-orange {
+  filter: drop-shadow(0 0 10px rgba(255, 143, 111, 0.15));
+}
+
+@utility glow-yellow {
+  filter: drop-shadow(0 0 10px rgba(253, 211, 77, 0.15));
+}
