@@ -75,13 +75,19 @@ if frontend_url:
         origins.append(clean_url)
     origins.append(clean_url + "/")
 
+
+# Regex to match all Vercel subdomains and local dev ports
+ALLOW_ORIGIN_REGEX = r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o for o in origins if o] + ["https://*.vercel.app"], # Allow all vercel subdomains for easier testing
+    allow_origins=[o for o in origins if o],
+    allow_origin_regex=ALLOW_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/api/config-debug")
 def config_debug():
