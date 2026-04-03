@@ -12,11 +12,13 @@ export default function LandingPage() {
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#features">Features</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#how-it-works">How It Works</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#system">System</a>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-headline font-bold text-sm hover:scale-95 duration-200 ease-in-out transition-all shadow-lg shadow-primary/20">
-              Launch Dashboard →
-            </Link>
+            <a
+              href="/dashboard"
+              className="flex items-center gap-2 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border border-violet-500/30 text-violet-300 hover:text-violet-100 hover:border-violet-400/60 hover:bg-violet-600/25 transition-all duration-200 px-4 py-1.5 rounded-full"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,0.8)] animate-pulse"></span>
+              IntelliRev
+            </a>
           </div>
         </div>
       </nav>

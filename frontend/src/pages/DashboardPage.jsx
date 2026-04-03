@@ -1,9 +1,65 @@
-import React from 'react'
-import { Link } from 'react-router'
+import React, { useState, useRef } from 'react'
+import { Link, useNavigate } from 'react-router'
 import BehaviorTreeVisuals from '../components/BehaviorTreeVisuals'
 import DashboardDAG from '../components/DashboardDAG'
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const USER_ID = 'guest_user_001'
+
 export default function DashboardPage() {
+  const navigate = useNavigate()
+
+  // IntelliRev Upload State
+  const [uploadTab, setUploadTab] = useState('text') // 'text' | 'pdf' | 'book'
+  const [text, setText] = useState('')
+  const [dragging, setDragging] = useState(false)
+  const [fileName, setFileName] = useState('')
+  const [file, setFile] = useState(null)
+  const [uploadLoading, setUploadLoading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileRef = useRef()
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragging(false)
+    const f = e.dataTransfer.files[0]
+    if (f && f.name.endsWith('.pdf')) { setFile(f); setFileName(f.name) }
+  }
+
+  const handleSubmit = async () => {
+    if (uploadTab === 'text' && text.trim().length < 50) { setUploadError('Enter at least 50 characters.'); return }
+    if ((uploadTab === 'pdf' || uploadTab === 'book') && !file) { setUploadError('Select a PDF.'); return }
+
+    setUploadLoading(true)
+    setUploadError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('user_id', USER_ID)
+      let endpoint = `${API}/intellirev/upload`
+
+      if (uploadTab === 'text') {
+        formData.append('text', text)
+      } else if (uploadTab === 'book') {
+        formData.append('file', file)
+        endpoint = `${API}/intellirev/upload-book`
+      } else {
+        formData.append('file', file)
+      }
+
+      const res = await fetch(endpoint, { method: 'POST', body: formData })
+      if (!res.ok) throw new Error(`Server error: ${res.status}`)
+
+      const data = await res.json()
+      sessionStorage.setItem('intellirev_plan', JSON.stringify(data))
+      navigate('/intellirev/plan')
+    } catch (e) {
+      setUploadError(e.message || 'Failed. Check backend.')
+    } finally {
+      setUploadLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* TopAppBar */}
@@ -11,18 +67,16 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
           <div className="hidden md:flex gap-8 items-center font-headline text-sm font-medium tracking-wide">
-            <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#dag">Knowledge DAG</a>
+            <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#intellirev">IntelliRev</a>
+            <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#dag">Knowledge DAG</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#behavior-tree">Behavior Tree</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#session">Live Session</a>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant/10">
-              <span className="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
-              <input className="bg-transparent border-none focus:ring-0 focus:outline-none text-sm text-on-surface placeholder:text-stone-600 w-48" placeholder="Search concepts..." type="text" />
-            </div>
-            <button className="bg-primary text-on-primary font-bold px-5 py-2 rounded-full hover:scale-95 transition-all duration-200 text-sm">
-              Profile
-            </button>
+            <Link to="/intellirev/profile" className="text-stone-400 hover:text-stone-100 text-sm font-medium transition-colors">View Profile</Link>
+            <Link to="/" className="bg-primary text-on-primary font-bold px-5 py-2 rounded-full hover:scale-95 transition-all duration-200 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">dashboard</span> Dashboard
+            </Link>
           </div>
         </div>
       </nav>
@@ -34,18 +88,113 @@ export default function DashboardPage() {
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">Welcome back, Curator.</h1>
             <p className="text-on-surface-variant text-lg">Your cognitive resonance is at <span className="text-secondary font-bold">88.4%</span> capacity today.</p>
           </div>
-          <div className="flex gap-3">
-            <div className="bg-surface-container-low p-1 rounded-full flex gap-1">
-              <button className="bg-surface-container-highest text-on-surface px-6 py-2 rounded-full text-sm font-medium shadow-xl">Overview</button>
-              <button className="text-on-surface-variant px-6 py-2 rounded-full text-sm font-medium hover:text-on-surface transition-colors">Deep Dive</button>
+        </header>
+
+        {/* ═══ INTELLIREV UPLOAD SECTION ═══ */}
+        <section className="mb-10" id="intellirev">
+          <div className="bg-gradient-to-br from-primary/10 to-secondary/5 border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/5">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="material-symbols-outlined text-3xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+              <div className="flex-1 flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold font-headline text-white">IntelliRev — Adaptive Learning</h2>
+                  <p className="text-stone-400 text-sm">Upload a syllabus, paste topics, or upload an entire book to start learning.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Upload Card */}
+              <div className="bg-surface-container/80 border border-white/5 rounded-2xl p-6">
+                {/* Tabs */}
+                <div className="flex bg-black/40 p-1 rounded-xl mb-5 w-fit">
+                  {[{ key: 'text', label: 'Paste Text' }, { key: 'pdf', label: 'Syllabus PDF' }].map(t => (
+                    <button key={t.key} onClick={() => setUploadTab(t.key)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${uploadTab === t.key ? 'bg-primary text-on-primary shadow-lg shadow-primary/30' : 'text-stone-500 hover:text-stone-300'}`}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {uploadTab === 'text' ? (
+                  <textarea value={text} onChange={e => setText(e.target.value)}
+                    placeholder={"Paste your syllabus, topics list, or chapter content here...\n\nExample:\nChapter 1: Neural Networks\nChapter 2: Convolutional Networks (CNN)"}
+                    rows={6}
+                    className="w-full bg-black/50 border border-white/5 rounded-xl p-4 text-white placeholder-stone-600 text-sm resize-none focus:outline-none focus:border-primary/50 transition-colors leading-relaxed"
+                  />
+                ) : (
+                  <div
+                    onDragOver={e => { e.preventDefault(); setDragging(true) }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileRef.current?.click()}
+                    className={`border-2 border-dashed rounded-xl p-10 cursor-pointer transition-all text-center ${dragging ? 'border-primary bg-primary/10' : fileName ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 hover:border-primary/40 hover:bg-primary/5'}`}
+                  >
+                    <input ref={fileRef} type="file" accept=".pdf" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { setFile(f); setFileName(f.name) } }} />
+                    <span className="material-symbols-outlined text-3xl text-primary mb-2 block">{uploadTab === 'book' ? 'menu_book' : 'upload_file'}</span>
+                    {fileName ? (
+                      <div>
+                        <p className="text-green-400 font-bold text-sm">{fileName}</p>
+                        <p className="text-stone-500 text-xs mt-1">Click to change</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-white font-bold text-sm">{uploadTab === 'book' ? 'Drop your book PDF here' : 'Drop syllabus PDF here'}</p>
+                        <p className="text-stone-500 text-xs mt-1">{uploadTab === 'book' ? 'Full textbook — chapters → topics → notes' : 'Syllabus or notes PDF'}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {uploadError && (
+                  <div className="mt-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded-lg">{uploadError}</div>
+                )}
+
+                <button onClick={handleSubmit} disabled={uploadLoading}
+                  className="w-full mt-4 bg-primary hover:bg-primary-dim text-on-primary font-bold py-3 rounded-xl transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-xl shadow-primary/20 text-sm">
+                  {uploadLoading ? (
+                    <><svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>Processing...</>
+                  ) : (
+                    <><span className="material-symbols-outlined text-sm">auto_awesome</span>{uploadTab === 'book' ? 'Analyze Book & Generate Plan' : 'Generate Study Plan'}</>
+                  )}
+                </button>
+              </div>
+
+              {/* Profile Card & Info Card */}
+              <div className="space-y-4 flex flex-col justify-between">
+                <div className="bg-surface-container/80 border border-white/5 rounded-2xl p-6 flex-1 flex flex-col justify-center relative overflow-hidden group">
+                  <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform">
+                     <span className="material-symbols-outlined text-[150px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+                  </div>
+                  <h3 className="font-headline text-2xl font-bold text-white mb-2 relative z-10">Your Learning Profile</h3>
+                  <p className="text-stone-400 text-sm mb-6 relative z-10 max-w-sm">Track your daily streak, view your mastery DAG, and revise your weakest subjects.</p>
+                  <Link to="/intellirev/profile" className="w-fit bg-secondary text-on-secondary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-secondary/20 hover:scale-95 transition-transform flex items-center gap-2 relative z-10 text-sm">
+                    Open Dashboard Profile →
+                  </Link>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 text-center">
+                    <div className="text-xl font-black text-primary">0</div>
+                    <div className="text-[10px] text-stone-500 uppercase tracking-wider">LLMs Used</div>
+                  </div>
+                  <div className="bg-secondary/10 border border-secondary/20 rounded-xl px-4 py-3 text-center">
+                    <div className="text-xl font-black text-secondary">NLP</div>
+                    <div className="text-[10px] text-stone-500 uppercase tracking-wider">Engine</div>
+                  </div>
+                  <div className="bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-center">
+                    <div className="text-xl font-black text-primary">∞</div>
+                    <div className="text-[10px] text-stone-500 uppercase tracking-wider">Revisions</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </header>
+        </section>
 
         {/* ═══ BENTO GRID ═══ */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-
-          {/* ─── Knowledge DAG (Interactive D3) ─── */}
+          {/* ─── Knowledge DAG ─── */}
           <section className="md:col-span-8 bg-surface-container rounded-3xl overflow-hidden relative flex flex-col" id="dag">
             <div className="p-8 pb-4 flex justify-between items-center relative z-10">
               <div>
@@ -59,22 +208,14 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
-            <div className="px-8 pb-2">
-              <DashboardDAG />
-            </div>
+            <div className="px-8 pb-2"><DashboardDAG /></div>
             <div className="p-8 pt-4 grid grid-cols-3 gap-4 relative z-10">
-              <div className="bg-surface-container-low p-4 rounded-2xl">
-                <div className="text-on-surface-variant text-xs mb-1">Total Nodes</div>
-                <div className="text-xl font-bold">15–20</div>
-              </div>
-              <div className="bg-surface-container-low p-4 rounded-2xl">
-                <div className="text-on-surface-variant text-xs mb-1">Weak Links</div>
-                <div className="text-xl font-bold text-error">3</div>
-              </div>
-              <div className="bg-surface-container-low p-4 rounded-2xl">
-                <div className="text-on-surface-variant text-xs mb-1">Graph Density</div>
-                <div className="text-xl font-bold text-secondary">0.76</div>
-              </div>
+              {[{ label: 'Total Nodes', value: '15–20' }, { label: 'Weak Links', value: '3', color: 'text-error' }, { label: 'Graph Density', value: '0.76', color: 'text-secondary' }].map(s => (
+                <div key={s.label} className="bg-surface-container-low p-4 rounded-2xl">
+                  <div className="text-on-surface-variant text-xs mb-1">{s.label}</div>
+                  <div className={`text-xl font-bold ${s.color || ''}`}>{s.value}</div>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -87,13 +228,12 @@ export default function DashboardPage() {
                   <span className="font-bold text-xl">82%</span>
                 </div>
                 <h3 className="text-2xl font-bold font-headline mb-2">Mastery Score</h3>
-                <p className="text-sm opacity-80 leading-relaxed">Composite: 0.5 × test + 0.3 × practice + 0.2 × retention. Currently above the "Strong" threshold.</p>
+                <p className="text-sm opacity-80 leading-relaxed">Composite: 0.5 × test + 0.3 × practice + 0.2 × retention.</p>
               </div>
               <div className="h-1.5 w-full bg-on-tertiary-fixed/10 rounded-full mt-6">
                 <div className="h-full w-[82%] bg-on-tertiary-fixed rounded-full transition-all duration-1000"></div>
               </div>
             </div>
-
             <div className="bg-secondary text-on-secondary-fixed rounded-3xl p-8 flex flex-col justify-between min-h-[240px] shadow-2xl transition-transform hover:-translate-y-1 glow-yellow">
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -101,7 +241,7 @@ export default function DashboardPage() {
                   <span className="font-bold text-xl">0.12</span>
                 </div>
                 <h3 className="text-2xl font-bold font-headline mb-2">Brier Score</h3>
-                <p className="text-sm opacity-80 leading-relaxed">Confidence calibration is excellent. Student predicts own performance with high accuracy.</p>
+                <p className="text-sm opacity-80 leading-relaxed">Confidence calibration is excellent.</p>
               </div>
               <div className="h-1.5 w-full bg-on-secondary-fixed/10 rounded-full mt-6">
                 <div className="h-full w-[88%] bg-on-secondary-fixed rounded-full transition-all duration-1000"></div>
@@ -109,7 +249,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* ─── Behavior Tree Visualization (Full-width interactive D3) ─── */}
+          {/* ─── Behavior Tree ─── */}
           <section className="md:col-span-12 bg-surface-container rounded-3xl overflow-hidden" id="behavior-tree">
             <div className="p-8 pb-0 flex justify-between items-center">
               <div>
@@ -121,7 +261,7 @@ export default function DashboardPage() {
             <BehaviorTreeVisuals />
           </section>
 
-          {/* ─── Active Session (Code View) ─── */}
+          {/* ─── Active Session ─── */}
           <section className="md:col-span-7 bg-surface-container-low rounded-3xl overflow-hidden shadow-sm" id="session">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-surface-container">
               <div className="flex items-center gap-3">
@@ -142,12 +282,8 @@ export default function DashboardPage() {
               </div>
               <div className="p-5 bg-surface-container border-t border-white/5">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-on-surface">
-                    <span className="text-error font-bold">Root Cause Found:</span> Missing prerequisite — "Difference of Squares" mastery at 38%.
-                  </p>
-                  <button className="bg-primary text-on-primary px-5 py-2 rounded-xl text-xs font-bold hover:bg-primary-container transition-colors">
-                    Run Remediation
-                  </button>
+                  <p className="text-xs text-on-surface"><span className="text-error font-bold">Root Cause Found:</span> Missing prerequisite — "Difference of Squares" mastery at 38%.</p>
+                  <button className="bg-primary text-on-primary px-5 py-2 rounded-xl text-xs font-bold hover:bg-primary-container transition-colors">Run Remediation</button>
                 </div>
               </div>
             </div>
@@ -183,31 +319,7 @@ export default function DashboardPage() {
               View Full Error History
             </button>
           </section>
-
         </div>
-
-        {/* ═══ Featured Resource ═══ */}
-        <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 relative h-[280px] rounded-3xl overflow-hidden group">
-            <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFa6l8kG6W4Np_nNChY5R4zexO21KnMakjRFPngzfRtMBgMA4mh4gbQO2UGRbIjgwc1gufuI1Byv_0d1PCv-p6iQQ7li0g3p6aVOuGGPd4B7YAqhMqiRsfTyRLn5ZqXoHTCaSr9ZOn8Pzv9ns-AXHg4HbVQXVUpAxLpEwPEy3__TO1R4Rm7CDFdW2VAbhl3T8vO8JDqVCVgZlHu6xs1tzDP_RDhZsKVuaMmFslW8BtrdsOtxURjFHrRyor6HzoIPb3AiWyKrirGbJR" alt="Neural network visualization" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 p-8">
-              <span className="bg-primary px-3 py-1 rounded-full text-[10px] font-black text-on-primary uppercase tracking-wider mb-3 inline-block">Explainability Engine</span>
-              <h2 className="text-2xl font-bold font-headline mb-2 max-w-md">Full Decision Trace</h2>
-              <p className="text-on-surface-variant max-w-sm text-sm">Every diagnosis produces a complete trace: Fault Tree path, blame propagation, mastery reasoning, and the Behavior Tree decision.</p>
-            </div>
-          </div>
-          <div className="bg-primary text-on-primary rounded-3xl p-8 flex flex-col justify-center glow-orange">
-            <span className="material-symbols-outlined text-4xl mb-4">science</span>
-            <h3 className="text-2xl font-bold font-headline mb-3">MVP Scope</h3>
-            <div className="space-y-2 text-on-primary/80 text-sm">
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> 15–20 algebra concepts</div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> 40–60 diagnostic questions</div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> Fault tree per question</div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> Full DAG + Behavior Tree</div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* FAB */}
