@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API } from '../../api';
 
 export default function LearnPage() {
   const { topicId } = useParams()

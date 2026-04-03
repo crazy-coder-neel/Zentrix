@@ -25,24 +25,49 @@ app = FastAPI(title="Zentrix — Episteme Engine", version="2.0")
 
 
 
+
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 origins = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://localhost:5174",
     "http://localhost:8000",
-    FRONTEND_URL,
+    "https://zentrix-93lvioc6e-neels-projects-9d7dae42.vercel.app",
 ]
+
+# Robustly handle the FRONTEND_URL environment variable
+if FRONTEND_URL:
+    clean_url = FRONTEND_URL.rstrip("/")
+    if clean_url.startswith("http://"):
+        origins.append(clean_url.replace("http://", "https://"))
+    elif clean_url.startswith("https://"):
+        origins.append(clean_url.replace("https://", "http://"))
+    
+    if clean_url not in origins:
+        origins.append(clean_url)
+    origins.append(clean_url + "/")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o for o in origins if o],
+    allow_origins=[o for o in origins if o] + ["https://*.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+
+
+
+@app.get("/api/config-debug")
+def config_debug():
+    return {
+        "origins": origins,
+        "frontend_url_env": FRONTEND_URL,
+        "mode": os.getenv("ENV", "development")
+    }
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
 

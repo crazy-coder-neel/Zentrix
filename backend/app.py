@@ -51,6 +51,7 @@ app = FastAPI(
 )
 
 
+
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
 origins = [
     "http://localhost:5173",
@@ -58,20 +59,38 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:5174",
+    "https://zentrix-93lvioc6e-neels-projects-9d7dae42.vercel.app",
 ]
+
+# Robustly handle the FRONTEND_URL environment variable
 if frontend_url:
-    if frontend_url not in origins:
-        origins.append(frontend_url)
-    if not frontend_url.endswith("/"):
-        origins.append(frontend_url + "/")
+    clean_url = frontend_url.rstrip("/")
+    # Add both protocols just in case
+    if clean_url.startswith("http://"):
+        origins.append(clean_url.replace("http://", "https://"))
+    elif clean_url.startswith("https://"):
+        origins.append(clean_url.replace("https://", "http://"))
+    
+    if clean_url not in origins:
+        origins.append(clean_url)
+    origins.append(clean_url + "/")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o for o in origins if o],
+    allow_origins=[o for o in origins if o] + ["https://*.vercel.app"], # Allow all vercel subdomains for easier testing
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/api/config-debug")
+def config_debug():
+    return {
+        "origins": origins,
+        "frontend_url_env": frontend_url,
+        "mode": os.getenv("ENV", "development")
+    }
+
 
 
 @app.exception_handler(Exception)

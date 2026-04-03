@@ -4,7 +4,7 @@ import { supabase } from '../supabase'
 import BehaviorTreeVisuals from '../components/BehaviorTreeVisuals'
 import DashboardDAG from '../components/DashboardDAG'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API } from '../api';
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -423,9 +423,18 @@ export default function DashboardPage() {
       </main>
 
       {}
+
       <Link to="/quiz-generator" title="Start New Diagnostic" className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
         <span className="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add</span>
       </Link>
+
+      <div className="fixed bottom-4 left-4 z-50 pointer-events-none opacity-40 hover:opacity-100 transition-opacity">
+        <div className="bg-black/80 border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${API.includes('localhost') ? 'bg-yellow-500' : 'bg-green-500'}`} />
+          <span className="text-[10px] font-mono text-stone-500 font-bold uppercase tracking-widest">{API}</span>
+        </div>
+      </div>
     </div>
   )
 }
+

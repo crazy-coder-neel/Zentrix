@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../supabase'
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API } from '../../api'
+
 
 const DAY_COLORS = [
   'from-primary/20 to-primary/40',

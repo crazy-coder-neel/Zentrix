@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../supabase'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API } from '../../api';
+
 
 const FEATURES = [
   { icon: 'calendar_month', title: 'Smart Study Plan', desc: '5-day adaptive schedule built from your syllabus using TF-IDF + NLP topic extraction.', color: 'from-primary/20 to-primary/5', accent: 'text-primary' },

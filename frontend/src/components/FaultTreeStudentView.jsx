@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API } from '../api';
+
 
 export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);

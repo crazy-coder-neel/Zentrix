@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { API } from '../../api';
+
 
 const DEMO_QUESTIONS = [
   { id: 'q1', question_text: 'What are the main components of a Neural Network?', question_type: 'mcq', answer: 'Input, Hidden, and Output layers', options: ['Input and Output only', 'Input, Hidden, and Output layers', 'Neurons and wires', 'Software and Hardware'] },
