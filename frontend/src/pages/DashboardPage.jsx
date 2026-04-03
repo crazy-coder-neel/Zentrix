@@ -23,6 +23,9 @@ export default function DashboardPage() {
             <button className="bg-primary text-on-primary font-bold px-5 py-2 rounded-full hover:scale-95 transition-all duration-200 text-sm">
               Profile
             </button>
+            <Link to="/login" title="Log out" className="flex justify-center items-center p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant group">
+              <span className="material-symbols-outlined text-[22px] group-hover:text-error transition-colors duration-300">logout</span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -35,7 +38,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant text-lg">Your cognitive resonance is at <span className="text-secondary font-bold">88.4%</span> capacity today.</p>
           </div>
           <div className="flex gap-3">
-            <div className="bg-surface-container-low p-1 rounded-full flex gap-1">
+            <Link to="/quiz-generator" className="bg-primary text-on-primary px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">add_task</span>
+              New Diagnostic
+            </Link>
+            <div className="bg-surface-container-low p-1 rounded-full flex gap-1 hidden md:flex">
               <button className="bg-surface-container-highest text-on-surface px-6 py-2 rounded-full text-sm font-medium shadow-xl">Overview</button>
               <button className="text-on-surface-variant px-6 py-2 rounded-full text-sm font-medium hover:text-on-surface transition-colors">Deep Dive</button>
             </div>
@@ -211,9 +218,9 @@ export default function DashboardPage() {
       </main>
 
       {/* FAB */}
-      <button className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
+      <Link to="/quiz-generator" title="Start New Diagnostic" className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
         <span className="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add</span>
-      </button>
+      </Link>
     </div>
   )
 }
