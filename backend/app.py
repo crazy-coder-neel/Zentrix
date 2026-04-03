@@ -32,16 +32,16 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Zentrix-IntelliRev Unified Backend starting...")
+    print("Zentrix-IntelliRev Unified Backend starting...")
     try:
         nltk.download("stopwords", quiet=True)
         nltk.download("punkt", quiet=True)
         nltk.download("averaged_perceptron_tagger", quiet=True)
-        print(f"📊 DIAGNOSTIC - YouTubeTranscriptApi methods: {[m for m in dir(YouTubeTranscriptApi) if not m.startswith('_')]}")
+        print(f"DIAGNOSTIC - YouTubeTranscriptApi methods: {[m for m in dir(YouTubeTranscriptApi) if not m.startswith('_')]}")
     except Exception as e:
-        print(f"⚠️ Startup warning: {e}")
+        print(f"Startup warning: {e}")
     yield
-    print("👋 Unified backend shutting down.")
+    print("Unified backend shutting down.")
 
 app = FastAPI(
     title="Zentrix-IntelliRev API",
@@ -59,13 +59,12 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:5174",
+    "https://zentrix-liard.vercel.app",
     "https://zentrix-93lvioc6e-neels-projects-9d7dae42.vercel.app",
 ]
 
-# Robustly handle the FRONTEND_URL environment variable
 if frontend_url:
     clean_url = frontend_url.rstrip("/")
-    # Add both protocols just in case
     if clean_url.startswith("http://"):
         origins.append(clean_url.replace("http://", "https://"))
     elif clean_url.startswith("https://"):
@@ -76,7 +75,6 @@ if frontend_url:
     origins.append(clean_url + "/")
 
 
-# Regex to match all Vercel subdomains and local dev ports
 ALLOW_ORIGIN_REGEX = r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+"
 
 app.add_middleware(
@@ -102,7 +100,7 @@ def config_debug():
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     import traceback
-    print(f"❌ Global Error: {str(exc)}")
+    print(f"Global Error: {str(exc)}")
     print(traceback.format_exc())
     return JSONResponse(
         status_code=500,

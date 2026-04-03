@@ -34,10 +34,10 @@ origins = [
     "http://localhost:3000",
     "http://localhost:5174",
     "http://localhost:8000",
+    "https://zentrix-liard.vercel.app",
     "https://zentrix-93lvioc6e-neels-projects-9d7dae42.vercel.app",
 ]
 
-# Robustly handle the FRONTEND_URL environment variable
 if FRONTEND_URL:
     clean_url = FRONTEND_URL.rstrip("/")
     if clean_url.startswith("http://"):
@@ -50,7 +50,6 @@ if FRONTEND_URL:
     origins.append(clean_url + "/")
 
 
-# Regex to match all Vercel subdomains and local dev ports
 ALLOW_ORIGIN_REGEX = r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+"
 
 app.add_middleware(
@@ -61,10 +60,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
-
 
 
 @app.get("/api/config-debug")
