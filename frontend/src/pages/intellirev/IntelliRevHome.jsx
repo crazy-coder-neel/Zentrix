@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001' // Guest mode
+const USER_ID = 'guest_user_001' 
 
 const FEATURES = [
   { icon: 'calendar_month', title: 'Smart Study Plan', desc: '5-day adaptive schedule built from your syllabus using TF-IDF + NLP topic extraction.', color: 'from-primary/20 to-primary/5', accent: 'text-primary' },
@@ -15,7 +15,7 @@ const FEATURES = [
 
 export default function IntelliRevHome() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('text') // 'text' | 'pdf'
+  const [tab, setTab] = useState('text') 
   const [text, setText] = useState('')
   const [dragging, setDragging] = useState(false)
   const [fileName, setFileName] = useState('')
@@ -60,7 +60,7 @@ export default function IntelliRevHome() {
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
       const data = await res.json()
-      // Store plan in sessionStorage for plan page
+
       sessionStorage.setItem('intellirev_plan', JSON.stringify(data))
       navigate('/intellirev/plan')
     } catch (e) {
@@ -72,7 +72,7 @@ export default function IntelliRevHome() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
+      {}
       <nav className="w-full top-0 sticky bg-background/95 backdrop-blur-xl z-50 border-b border-primary/10">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-xl mx-auto">
           <Link to="/" className="text-xl font-bold tracking-tighter text-white font-headline flex items-center gap-2">
@@ -90,9 +90,9 @@ export default function IntelliRevHome() {
         </div>
       </nav>
 
-      {/* Hero */}
+      {}
       <section className="relative pt-20 pb-16 overflow-hidden">
-        {/* Purple gradient blobs */}
+        {}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary text-on-primary/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-20 right-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -110,9 +110,9 @@ export default function IntelliRevHome() {
             Upload your syllabus. IntelliRev extracts topics, builds a 5-day study plan, fetches curated videos, generates notes and quizzes — then tracks your weaknesses adaptively.
           </p>
 
-          {/* Upload Card */}
+          {}
           <div className="bg-surface-container border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/20 max-w-2xl mx-auto">
-            {/* Tabs */}
+            {}
             <div className="flex bg-background p-1 rounded-2xl mb-6 w-fit mx-auto">
               {['text', 'pdf'].map((t) => (
                 <button
@@ -204,7 +204,7 @@ export default function IntelliRevHome() {
             </button>
           </div>
 
-          {/* Quick demo link */}
+          {}
           <button
             onClick={() => {
               setText('Chapter 1: Introduction to Machine Learning\nChapter 2: Linear Regression and Gradient Descent\nChapter 3: Logistic Regression and Classification\nChapter 4: Neural Networks and Deep Learning\nChapter 5: Convolutional Neural Networks (CNNs)\nChapter 6: Recurrent Neural Networks (RNNs)\nChapter 7: Natural Language Processing\nChapter 8: Reinforcement Learning\nChapter 9: Model Evaluation and Cross-Validation\nChapter 10: Deployment and MLOps')
@@ -217,7 +217,7 @@ export default function IntelliRevHome() {
         </div>
       </section>
 
-      {/* Features */}
+      {}
       <section className="py-20 max-w-screen-xl mx-auto px-8">
         <div className="text-center mb-12">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary mb-3 block">System Architecture</span>
@@ -241,7 +241,7 @@ export default function IntelliRevHome() {
         </div>
       </section>
 
-      {/* Flow diagram */}
+      {}
       <section className="py-12 border-t border-white/5">
         <div className="max-w-screen-xl mx-auto px-8">
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm font-bold">

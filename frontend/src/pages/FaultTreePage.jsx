@@ -19,7 +19,7 @@ export default function FaultTreePage() {
   }, []);
 
   const fetchAdaptiveQuestion = async () => {
-    // Show loading state gracefully if wanted, but instant swap is fine
+
     try {
         const response = await fetch('http://localhost:8000/api/irt/next-question', {
             method: 'POST',
@@ -39,7 +39,7 @@ export default function FaultTreePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* TopAppBar Reused for consistency */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -60,15 +60,15 @@ export default function FaultTreePage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-8 py-12 flex-grow w-full flex flex-col md:flex-row gap-12 items-start justify-center">
-        
-        {/* Left column info & sidebar */}
+
+        {}
         <div className="w-full md:w-1/3 space-y-6 shrink-0 mt-8">
             <div>
                <h1 className="text-4xl font-extrabold font-headline mb-4 tracking-tight">Fault Tree Diagnosis</h1>
                <p className="text-on-surface-variant leading-relaxed text-lg mb-6">
                  Select a dynamic question from our concept database to see the engine adapt its diagnosis.
                </p>
-               
+
                {loading ? (
                   <p className="text-stone-400">Loading question bank...</p>
                ) : (
@@ -87,7 +87,7 @@ export default function FaultTreePage() {
                   </div>
                )}
             </div>
-            
+
             <div className="bg-surface-container-low p-6 rounded-3xl border border-white/5 shadow-sm space-y-4">
                <div>
                   <h3 className="font-bold text-on-surface flex items-center gap-2 mb-1"><span className="material-symbols-outlined text-sm text-error">warning</span> Try This</h3>
@@ -96,7 +96,7 @@ export default function FaultTreePage() {
             </div>
         </div>
 
-        {/* Right column component */}
+        {}
         <div className="w-full md:w-auto flex-grow flex justify-center mt-2">
             {!loading && currentQuestion ? (
                 <FaultTreeStudentView question={currentQuestion} onAdaptiveNext={fetchAdaptiveQuestion} />

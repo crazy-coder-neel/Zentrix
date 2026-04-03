@@ -14,14 +14,13 @@ export default function DashboardDAG() {
   const svgRef = useRef(null)
   const [dagData, setDagData] = useState(null)
 
-  // Fetch live DAG data from the backend
   useEffect(() => {
     fetch(`${API}/api/dag?student_id=default`)
       .then(r => r.json())
       .then(data => setDagData(data))
       .catch(err => {
         console.error('Failed to fetch DAG, using fallback:', err)
-        // Fallback to static data if backend is down
+
         setDagData({
           nodes: [
             { id: 'C01', name: 'Signed Numbers', mastery: 0, state: 'weak', tier: 0 },
@@ -78,7 +77,6 @@ export default function DashboardDAG() {
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide(30))
 
-    // Links
     const link = g.append('g')
       .selectAll('line')
       .data(links)
@@ -86,7 +84,6 @@ export default function DashboardDAG() {
       .attr('stroke', 'rgba(255, 143, 111, 0.3)')
       .attr('stroke-width', 2)
 
-    // Nodes
     const node = g.append('g')
       .selectAll('g')
       .data(nodes)
@@ -103,7 +100,6 @@ export default function DashboardDAG() {
         .on('drag', dragged)
         .on('end', dragended))
 
-    // Mastery % inside node
     node.append('text')
       .attr('dy', 4)
       .attr('text-anchor', 'middle')
@@ -114,7 +110,6 @@ export default function DashboardDAG() {
       .attr('font-family', 'Inter, sans-serif')
       .style('pointer-events', 'none')
 
-    // Labels below
     node.append('text')
       .attr('dy', d => d.tier <= 1 ? 32 : 36)
       .attr('text-anchor', 'middle')

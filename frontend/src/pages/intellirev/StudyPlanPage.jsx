@@ -45,7 +45,7 @@ export default function StudyPlanPage() {
         setTopicIds(data.topic_ids || {})
         setLoading(false)
         return
-      } catch (e) { /* fallback */ }
+      } catch (e) {  }
     }
     fetch(`${API}/intellirev/plan/${USER_ID}`)
       .then(r => r.ok ? r.json() : Promise.reject(r))
@@ -64,8 +64,7 @@ export default function StudyPlanPage() {
     const files = e.target.files
     if (!files.length) return
     setIsUploadingBooks(true)
-    
-    // Process each file
+
     for (let file of files) {
       const formData = new FormData()
       formData.append('file', file)
@@ -109,7 +108,6 @@ export default function StudyPlanPage() {
     setDailySlots(prev => ({ ...prev, [day]: prev[day].filter((_, i) => i !== idx) }))
   }
 
-  // 1. STEP: DYNAMIC TIME PICKER (FULL PAGE GRID)
   if (step === 'TIMINGS') {
     return (
       <div className="min-h-screen bg-background p-12 flex flex-col items-center">
@@ -134,7 +132,7 @@ export default function StudyPlanPage() {
                 <button onClick={() => addSlot(dayNum)} className="w-10 h-10 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center border border-white/10 transition-all">+</button>
               </div>
 
-              {/* Added: Show Topics for this day */}
+              {}
               <div className="mb-6 p-4 bg-primary text-on-primary/5 border border-primary/10 rounded-2xl">
                 <span className="text-[9px] text-primary/60 font-black uppercase tracking-widest block mb-2">Today's Topics</span>
                 <div className="space-y-1.5">
@@ -146,7 +144,7 @@ export default function StudyPlanPage() {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-6 flex-1">
                 {dailySlots[dayNum].map((slot, idx) => (
                   <div key={idx} className="bg-black/40 border border-white/5 rounded-3xl p-5 animate-in slide-in-from-bottom-2 duration-300">
@@ -183,7 +181,6 @@ export default function StudyPlanPage() {
     )
   }
 
-  // 2. STEP: PREVIEW 5-DAY PLAN
   if (step === 'PREVIEW') {
     return (
       <div className="min-h-screen bg-background py-20 px-8">
@@ -220,7 +217,6 @@ export default function StudyPlanPage() {
     )
   }
 
-  // 3. STEP: THE ACTIVE PLAN DASHBOARD
   const allTopics = Object.values(plan).flat()
   return (
     <div className="min-h-screen bg-background">

@@ -1,19 +1,9 @@
-"""
-Explainability Engine — PRD §10.
 
-Produces structured explanation records after every student interaction.
-Explanations are assembled from string templates — NOT LLM output.
-Every decision is fully traceable.
-"""
 
 from __future__ import annotations
 
 from typing import Any
 
-
-# ──────────────────────────────────────────────
-# Template System
-# ──────────────────────────────────────────────
 SUMMARY_TEMPLATES = {
     "CONTRAST_CASE": (
         "You answered {answer} with {confidence}% confidence, but the correct "
@@ -62,12 +52,7 @@ SUMMARY_TEMPLATES = {
     ),
 }
 
-
 class ExplainabilityEngine:
-    """
-    Assembles structured ExplanationRecords after each interaction.
-    Every output is fully traceable — no black-box reasoning.
-    """
 
     def assemble_record(
         self,
@@ -87,37 +72,26 @@ class ExplainabilityEngine:
         misconception_descriptions: list[dict] | None = None,
         current_concept: str = "",
     ) -> dict:
-        """
-        Build a complete ExplanationRecord from all pipeline outputs.
 
-        Returns a structured dict matching the PRD's ExplanationRecord interface.
-        """
         import time as _time
 
         record = {
             "question_id": question_id,
             "timestamp": _time.time(),
 
-            # Error classification
             "error_type": error_type,
             "error_type_reason": self._error_type_reason(error_type, time_taken_ms),
 
-            # Fault tree result
             "fault_tree_trace": fault_tree_result,
 
-            # Blame propagation
             "blame_propagation": self._format_blame(blame_result),
 
-            # IRT update
             "irt_update": irt_update or {},
 
-            # Calibration
             "calibration": calibration or {},
 
-            # BT decision
             "bt_decision": self._format_bt(bt_action),
 
-            # Plain English summary
             "summary": self._generate_summary(
                 is_correct=is_correct,
                 error_type=error_type,
@@ -136,7 +110,7 @@ class ExplainabilityEngine:
         return record
 
     def _error_type_reason(self, error_type: str, time_ms: int) -> str:
-        """Human-readable rationale for the error classification."""
+
         if error_type == "correct":
             return "Answer matched the correct option."
         if error_type == "slip":
@@ -205,7 +179,6 @@ class ExplainabilityEngine:
         misconception_descriptions: list[dict] | None,
         current_concept: str,
     ) -> str:
-        """Generate a plain-English summary from templates."""
 
         if is_correct:
             return SUMMARY_TEMPLATES["CORRECT"].format(
@@ -221,7 +194,6 @@ class ExplainabilityEngine:
                 time_ms=time_taken_ms,
             )
 
-        # For mistakes, use the BT action type to pick the right template
         action_type = bt_action.get("type", "NEXT_CAT_ITEM") if bt_action else "NEXT_CAT_ITEM"
         mc_desc = ""
         if misconception_descriptions:

@@ -59,7 +59,7 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile nav overlay */}
+      {}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div

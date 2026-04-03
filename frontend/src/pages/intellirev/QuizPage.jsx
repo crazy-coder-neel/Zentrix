@@ -82,7 +82,7 @@ export default function QuizPage() {
       const data = res.ok ? await res.json() : null
       setResult(data || { score: 0, total: questions.length, percentage: 0, classification: 'medium', next_revision: 'Tomorrow', points_earned: 5 })
     } catch {
-      // Calculate locally
+
       let correct = 0
       questions.forEach(q => {
         if ((answers[q.id]?.given_answer || '').toLowerCase().trim() === q.answer.toLowerCase().trim()) correct++
@@ -153,12 +153,12 @@ export default function QuizPage() {
 
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Progress Bar */}
+        {}
         <div className="w-full h-1 bg-white/5">
           <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
         </div>
 
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-8 py-4 border-b border-primary/10">
           <div className="flex items-center gap-3">
             <Link to="/" className="text-stone-500 hover:text-white transition-colors">
@@ -175,11 +175,11 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Question */}
+        {}
         <div className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="max-w-xl w-full">
             <div className="bg-surface-container border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/5">
-              {/* Question type badge */}
+              {}
               <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block bg-primary/10 text-primary border border-primary/20">
                 Multiple Choice
               </span>
@@ -225,7 +225,7 @@ export default function QuizPage() {
               </div>
             </div>
 
-            {/* Question dots */}
+            {}
             <div className="flex justify-center gap-2 mt-6">
               {questions.map((_, i) => (
                 <button key={i} onClick={() => setCurrentIdx(i)} className={`rounded-full transition-all ${

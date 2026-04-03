@@ -1,9 +1,4 @@
-"""
-Supabase Client — DB persistence layer.
 
-Reads SUPABASE_URL and SUPABASE_KEY from .env file.
-Falls back to in-memory mode if credentials are missing (dev/hackathon mode).
-"""
 
 from __future__ import annotations
 
@@ -19,12 +14,8 @@ except ImportError:
 _client = None
 _in_memory_mode = False
 
-
 def get_supabase_client():
-    """
-    Get or create the Supabase client singleton.
-    Returns None if credentials are not configured (in-memory fallback).
-    """
+
     global _client, _in_memory_mode
 
     if _in_memory_mode:
@@ -51,18 +42,12 @@ def get_supabase_client():
         _in_memory_mode = True
         return None
 
-
 def is_connected() -> bool:
-    """Check if Supabase is available."""
+
     return get_supabase_client() is not None
 
-
-# ──────────────────────────────────────────────
-# CRUD helpers
-# ──────────────────────────────────────────────
-
 def save_student(student_id: str, data: dict) -> bool:
-    """Save/update a student record."""
+
     client = get_supabase_client()
     if not client:
         return False
@@ -76,9 +61,8 @@ def save_student(student_id: str, data: dict) -> bool:
         print(f"DB save_student error: {e}")
         return False
 
-
 def load_student(student_id: str) -> dict | None:
-    """Load a student record by ID."""
+
     client = get_supabase_client()
     if not client:
         return None
@@ -91,9 +75,8 @@ def load_student(student_id: str) -> dict | None:
         print(f"DB load_student error: {e}")
         return None
 
-
 def save_session_response(student_id: str, response_data: dict) -> bool:
-    """Save a session response to the responses table."""
+
     client = get_supabase_client()
     if not client:
         return False
@@ -107,9 +90,8 @@ def save_session_response(student_id: str, response_data: dict) -> bool:
         print(f"DB save_response error: {e}")
         return False
 
-
 def save_mastery_snapshot(student_id: str, mastery_data: dict) -> bool:
-    """Save a mastery snapshot."""
+
     client = get_supabase_client()
     if not client:
         return False
@@ -123,9 +105,8 @@ def save_mastery_snapshot(student_id: str, mastery_data: dict) -> bool:
         print(f"DB save_mastery error: {e}")
         return False
 
-
 def register_student(email: str, password: str, name: str) -> dict | None:
-    """Register a new student via Supabase Auth."""
+
     client = get_supabase_client()
     if not client:
         return None
@@ -138,7 +119,7 @@ def register_student(email: str, password: str, name: str) -> dict | None:
             }
         })
         if auth_response.user:
-            # Also save to students table
+
             save_student(auth_response.user.id, {
                 "email": email,
                 "name": name,
@@ -153,9 +134,8 @@ def register_student(email: str, password: str, name: str) -> dict | None:
         print(f"Registration error: {e}")
         return None
 
-
 def login_student(email: str, password: str) -> dict | None:
-    """Login a student via Supabase Auth."""
+
     client = get_supabase_client()
     if not client:
         return None

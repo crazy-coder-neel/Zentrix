@@ -1,18 +1,11 @@
-"""
-PDF Parser — Extract plain text from PDF bytes using PyMuPDF (fitz).
-No LLMs. Pure text extraction.
-"""
+
 import io
 import re
 
-
 def extract_text_from_pdf(content: bytes) -> str:
-    """
-    Extract and clean text from a PDF byte stream.
-    Returns a single cleaned string.
-    """
+
     try:
-        import fitz  # PyMuPDF
+        import fitz  
 
         doc = fitz.open(stream=content, filetype="pdf")
         pages_text = []
@@ -25,9 +18,8 @@ def extract_text_from_pdf(content: bytes) -> str:
         doc.close()
         raw = "\n".join(pages_text)
 
-        # Basic cleanup
-        raw = re.sub(r'\n{3,}', '\n\n', raw)  # Collapse excess newlines
-        raw = re.sub(r'[ \t]{2,}', ' ', raw)  # Collapse excess spaces
+        raw = re.sub(r'\n{3,}', '\n\n', raw)  
+        raw = re.sub(r'[ \t]{2,}', ' ', raw)  
         raw = raw.strip()
 
         return raw

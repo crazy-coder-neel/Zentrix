@@ -10,11 +10,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Feature IntelliRev Imports
 from feature_intellirev.router import router as intellirev_router
 from youtube_transcript_api import YouTubeTranscriptApi
 
-# Zentrix / Episteme Engine Imports
 from fault_tree_engine.fault_tree import evaluate_fault_tree, classify_error, get_fault_tree
 from dag_engine.dag import ConceptDAG
 from dag_engine.blame import backpropagate_blame
@@ -32,9 +30,6 @@ from db.supabase_client import (
 
 load_dotenv()
 
-# ─────────────────────────────────────────────────────────────────
-# Lifespan — NLTK Data Pre-download
-# ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Zentrix-IntelliRev Unified Backend starting...")
@@ -55,7 +50,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -70,7 +64,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global Exceptions
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     import traceback
@@ -81,14 +74,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal Server Error", "message": str(exc)},
     )
 
-# ─────────────────────────────────────────────────────────────────
-# 1. Feature — IntelliRev Router
-# ─────────────────────────────────────────────────────────────────
 app.include_router(intellirev_router, prefix="/intellirev", tags=["IntelliRev"])
 
-# ─────────────────────────────────────────────────────────────────
-# 2. Feature — Episteme Cognitive Engines
-# ─────────────────────────────────────────────────────────────────
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
 concept_dag = ConceptDAG()
 behavior_tree = BehaviorTree()
@@ -184,7 +171,6 @@ def evaluate_answer(req: EvaluateRequest):
         "calibration": irt_tracker.get_state_summary(),
     }
 
-# Auth Proxies
 class AuthRequest(BaseModel):
     email: str
     password: str
@@ -200,7 +186,6 @@ def auth_register(req: AuthRequest):
 def auth_login(req: AuthRequest):
     return {"status": "success", "user": {"id": "guest_user_001", "email": req.email, "name": req.name}}
 
-# Health
 @app.get("/health")
 def unified_health():
     return {

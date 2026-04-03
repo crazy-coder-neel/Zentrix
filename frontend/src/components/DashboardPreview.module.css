@@ -11,7 +11,7 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem; /* increased gap */
+  gap: 2rem; 
 }
 .left, .right {
   display: flex;
@@ -19,7 +19,6 @@
   gap: 2rem;
 }
 
-/* Base Card Style */
 .baseCard {
   border-radius: var(--radius-2xl);
   padding: 2.5rem;
@@ -32,7 +31,6 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Welcome - Cream */
 .welcomeCard {
   composes: baseCard;
   background: var(--card-cream);
@@ -98,7 +96,6 @@
   cursor: pointer;
 }
 
-/* DAG - Yellow */
 .dagCard {
   composes: baseCard;
   background: var(--card-yellow);
@@ -125,7 +122,7 @@
   position: relative;
   height: 220px;
   margin-bottom: 1.5rem;
-  /* Lighten up the svg elements naturally using CSS overrides below if needed */
+
 }
 .dagFooter {
   display: flex;
@@ -170,7 +167,6 @@
   cursor: pointer;
 }
 
-/* Mastery Ring - Dark */
 .masteryCard {
   composes: baseCard;
   background: var(--card-dark);
@@ -222,7 +218,6 @@
 .statBlue { color: var(--card-cream); }
 .statCyan { color: var(--card-orange); }
 
-/* Neural Sync - Orange */
 .neuralCard {
   composes: baseCard;
   background: var(--card-orange);

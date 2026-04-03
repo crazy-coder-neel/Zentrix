@@ -2,7 +2,7 @@ import pytest
 from fault_tree_engine.fault_tree import evaluate_fault_tree, classify_error
 
 def test_evaluate_fault_tree_q09_002():
-    # Define the fault tree from the PRD Section 14.4
+
     fault_tree_q09_002 = {
         "type": "OR",
         "label": "Wrong answer on Q09_002",
@@ -39,19 +39,16 @@ def test_evaluate_fault_tree_q09_002():
         ]
     }
 
-    # Answer event 1: Chose B
     event_B = {"answer_selected": "B"}
     matched, mcs = evaluate_fault_tree(fault_tree_q09_002, event_B)
     assert matched is True
     assert mcs == {"M11"}
 
-    # Answer event 2: Chose D without prior M05 pattern
     event_D_no_prior = {"answer_selected": "D"}
     matched, mcs = evaluate_fault_tree(fault_tree_q09_002, event_D_no_prior)
     assert matched is False
     assert mcs == set()
 
-    # Answer event 3: Chose D with prior M05 pattern
     event_D_prior = {
         "answer_selected": "D",
         "prior_error_patterns": ["M05", "M12"]
@@ -71,25 +68,21 @@ def test_classify_error():
 
     error_history = []
 
-    # 1. Correct
     result = classify_error(question, "A", 30000, error_history)
     assert result == "correct"
 
-    # 2. Fast wrong (slip) -> < 14000ms
     result = classify_error(question, "B", 10000, error_history)
     assert result == "slip"
 
-    # 3. Mistake (default when not fast wrong and not in history 2+ times) -> >= 14000ms
     result = classify_error(question, "B", 20000, error_history)
     assert result == "mistake"
 
-    # 4. Mistake (same error 2+ times)
     error_history.extend([
         {"concept_id": "C09", "answer_selected": "C"},
         {"concept_id": "C09", "answer_selected": "C"}
     ])
-    result = classify_error(question, "C", 5000, error_history) # Even if fast, historically we might have logic (wait, in the PRD, ratio < 0.5 returns slip before checking history).
+    result = classify_error(question, "C", 5000, error_history) 
     assert result == "slip"
 
-    result = classify_error(question, "C", 20000, error_history) # Above slip threshold
+    result = classify_error(question, "C", 20000, error_history) 
     assert result == "mistake"

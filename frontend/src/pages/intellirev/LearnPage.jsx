@@ -14,7 +14,6 @@ export default function LearnPage() {
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('notes')
 
-  // Notes auto-gen
   const [notesLoading, setNotesLoading] = useState(false)
   const [notes, setNotes] = useState(null)
   const [notesKeywords, setNotesKeywords] = useState([])
@@ -22,24 +21,20 @@ export default function LearnPage() {
   const [selectedBooks, setSelectedBooks] = useState([])
   const USER_ID = 'guest_user_001'
 
-  // Summarizer
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [videoSummary, setVideoSummary] = useState(null)
   const [showSummary, setShowSummary] = useState(false)
 
-  // Q&A
   const [qaQuestion, setQaQuestion] = useState('')
   const [qaAnswer, setQaAnswer] = useState(null)
   const [qaLoading, setQaLoading] = useState(false)
   const [suggestedQuestions, setSuggestedQuestions] = useState([])
   const [suggestLoading, setSuggestLoading] = useState(false)
 
-  // Search
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResult, setSearchResult] = useState(null)
   const [searching, setSearching] = useState(false)
 
-  // Fetch content on mount
   useEffect(() => {
     setLoading(true)
     setContent(null)
@@ -86,10 +81,9 @@ export default function LearnPage() {
       const res = await fetch(`${API}/intellirev/generate-notes/${topicId}${force ? '?force=true' : ''}`, { method: 'POST' })
       if (!res.ok) throw new Error('Failed')
       const data = await res.json()
-      
-      // Handle RAG error
+
       if (data.error === 'RAG_CONTEXT_EMPTY') {
-        setNotes([]) // Show the upload portal
+        setNotes([]) 
         setNotesGenerated(false)
         return
       }
@@ -111,7 +105,7 @@ export default function LearnPage() {
   const handleIndexContent = async () => {
     if (!selectedBooks.length) return
     setNotesLoading(true)
-    
+
     for (let file of selectedBooks) {
       const formData = new FormData()
       formData.append('file', file)
@@ -121,9 +115,9 @@ export default function LearnPage() {
         await fetch(`${API}/intellirev/upload-book`, { method: 'POST', body: formData })
       } catch (err) { console.error("Upload failed", file.name) }
     }
-    
+
     setSelectedBooks([])
-    // Refresh to use new context
+
     await generateNotes(true)
   }
 
@@ -133,7 +127,6 @@ export default function LearnPage() {
     }
   }, [activeTab, notesGenerated, notesLoading, loading, content, generateNotes])
 
-  // Summarize video
   const handleSummarize = async () => {
     if (!content?.video?.url || summaryLoading) return
     setSummaryLoading(true)
@@ -153,7 +146,6 @@ export default function LearnPage() {
     }
   }
 
-  // Q&A
   const handleAskQuestion = async (q) => {
     const question = q || qaQuestion
     if (!question.trim()) return
@@ -173,7 +165,6 @@ export default function LearnPage() {
     }
   }
 
-  // Suggested questions
   const loadSuggestions = async () => {
     if (suggestLoading || topicId === 'demo') return
     setSuggestLoading(true)
@@ -194,7 +185,6 @@ export default function LearnPage() {
     }
   }, [loading, content, topicId])
 
-  // Search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
     setSearching(true)
@@ -208,7 +198,7 @@ export default function LearnPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Unified Learn Navigation */}
+      {}
       <nav className="w-full top-0 sticky bg-background/95 backdrop-blur-xl z-50 border-b border-primary/10">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-xl mx-auto">
           <div className="flex items-center gap-2 text-xl font-bold tracking-tighter font-headline">
@@ -252,14 +242,14 @@ export default function LearnPage() {
       ) : (
         <div className="max-w-screen-xl mx-auto px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left column — Video + Notes/Resources */}
+            {}
             <div className="lg:col-span-2 space-y-6">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-primary mb-1 block">Active Learning Module</span>
                 <h1 className="font-headline text-4xl font-black text-white leading-tight">{content?.topic_name || topicName}</h1>
               </div>
 
-              {/* Video Player */}
+              {}
               {content?.video ? (
                 <div className="bg-surface-container border border-primary/20 rounded-2xl overflow-hidden">
                   <div className="aspect-video bg-black">
@@ -273,7 +263,7 @@ export default function LearnPage() {
                         {content.video.views && <span className="text-stone-500 text-xs">{(content.video.views / 1000).toFixed(0)}K views</span>}
                       </div>
                     </div>
-                    {/* Summarize Button */}
+                    {}
                     <button
                       onClick={handleSummarize}
                       disabled={summaryLoading}
@@ -287,7 +277,7 @@ export default function LearnPage() {
                     </button>
                   </div>
 
-                  {/* Video Summary Panel */}
+                  {}
                   {showSummary && (
                     <div className="border-t border-primary/10 p-5 bg-surface-container/50">
                       <div className="flex items-center gap-2 mb-3">
@@ -322,7 +312,7 @@ export default function LearnPage() {
                 </div>
               )}
 
-              {/* RAG Book Upload Panel below Video */}
+              {}
               <div className="bg-surface-container border border-primary/20 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 justify-between">
                 <div>
                   <h3 className="text-white font-bold text-lg mb-1 flex items-center gap-2">
@@ -331,13 +321,13 @@ export default function LearnPage() {
                   </h3>
                   <p className="text-stone-500 text-sm">Upload reference books/notes to generate specific, tailored insights.</p>
                 </div>
-                
+
                 <div className="flex items-center gap-3 w-full md:w-auto">
                   <label className="flex-1 md:flex-none text-center bg-white/5 hover:bg-white/10 text-stone-300 border border-white/10 px-6 py-3 rounded-xl font-bold text-sm cursor-pointer transition-all">
                     {selectedBooks.length > 0 ? `${selectedBooks.length} Files Selected` : 'Select PDFs'}
                     <input type="file" multiple accept=".pdf" onChange={handleBookSelect} className="hidden" />
                   </label>
-                  
+
                   <button 
                     onClick={handleIndexContent} 
                     disabled={selectedBooks.length === 0 || notesLoading}
@@ -348,7 +338,7 @@ export default function LearnPage() {
                 </div>
               </div>
 
-              {/* Tabs: Notes / Resources */}
+              {}
               <div className="bg-surface-container border border-primary/20 rounded-2xl overflow-hidden">
                 <div className="flex border-b border-white/5">
                   {['notes', 'resources'].map(tab => (
@@ -380,7 +370,7 @@ export default function LearnPage() {
                               Clean & Regenerate
                             </button>
                           </div>
-                          
+
                           <ul className="space-y-4">
                             {notes.map((sentence, i) => (
                               <li key={i} className="flex gap-4 group">
@@ -425,9 +415,9 @@ export default function LearnPage() {
               </div>
             </div>
 
-            {/* Right column — Q&A + Search */}
+            {}
             <div className="space-y-6">
-              {/* Q&A Panel */}
+              {}
               <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
@@ -458,7 +448,7 @@ export default function LearnPage() {
                   </div>
                 )}
 
-                {/* Suggested Questions (Adaptive Learning) */}
+                {}
                 {suggestedQuestions.length > 0 && (
                   <div className="space-y-4">
                     <div className="bg-primary text-on-primary/10 border border-primary/20 rounded-xl p-4">
@@ -468,7 +458,7 @@ export default function LearnPage() {
                       </p>
                       <p className="text-white text-xs font-bold leading-tight">I think it's important you understand these 3 concepts before taking the quiz.</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       {suggestedQuestions.slice(0, 3).map((q, i) => (
                         <button
@@ -488,7 +478,7 @@ export default function LearnPage() {
                 )}
               </div>
 
-              {/* Explainability Search */}
+              {}
               <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
                 <h3 className="text-white font-bold text-lg mb-4">Search in Notes</h3>
                 <div className="flex gap-2">

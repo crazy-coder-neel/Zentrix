@@ -5,9 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API = 'http://localhost:8000';
 
-/* ═══════════════════════════════════════════════
-   BehaviorTreePage — Interactive BT Visualisation
-   ═══════════════════════════════════════════════ */
 export default function BehaviorTreePage() {
   const [treeStructure, setTreeStructure] = useState(null);
   const [btResult, setBtResult] = useState(null);
@@ -16,7 +13,6 @@ export default function BehaviorTreePage() {
   const [simulating, setSimulating] = useState(false);
   const svgRef = useRef(null);
 
-  // Editable state overrides for simulation
   const [overrides, setOverrides] = useState({
     calibration_state: 'well_calibrated',
     fatigue_score: 0.3,
@@ -68,18 +64,16 @@ export default function BehaviorTreePage() {
     }
   }, [overrides]);
 
-  // D3 tree rendering
   useEffect(() => {
     if (!svgRef.current || !treeStructure) return;
 
     const width = 1100;
-    const height = 650; // Increased height for deeper tree
+    const height = 650; 
     const margin = { top: 60, right: 40, bottom: 80, left: 40 };
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    // Glow filter
     const defs = svg.append('defs');
     const filter = defs.append('filter').attr('id', 'btGlow');
     filter.append('feGaussianBlur').attr('stdDeviation', '4').attr('result', 'coloredBlur');
@@ -90,19 +84,16 @@ export default function BehaviorTreePage() {
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // We use a hierarchical layout
     const treeLayout = d3.tree()
       .size([width - margin.left - margin.right, height - margin.top - margin.bottom])
       .separation((a, b) => (a.parent === b.parent ? 1.2 : 1.5));
-      
+
     const root = d3.hierarchy(treeStructure);
     treeLayout(root);
 
-    // Determine which branches fired from the trace
-    // Trace format: [{ branch: "DANGER_ZONE", fired: true }, ...]
     const firedBranches = new Set();
     const evaluatedBranches = new Set();
-    
+
     if (btResult?.action?.trace) {
       btResult.action.trace.forEach(t => {
         evaluatedBranches.add(t.branch);
@@ -110,7 +101,6 @@ export default function BehaviorTreePage() {
       });
     }
 
-    // Links
     g.selectAll('.btLink')
       .data(root.links())
       .enter().append('path')
@@ -118,11 +108,10 @@ export default function BehaviorTreePage() {
       .attr('d', d3.linkVertical().x(d => d.x).y(d => d.y))
       .attr('fill', 'none')
       .attr('stroke', d => {
-        // Find if the link leads to a fired sequence branch or action
+
         const name = d.target.data.name || '';
         const parentName = d.source.data.name || '';
-        
-        // Highlight logic
+
         const isFiredBranch = firedBranches.has(name) || firedBranches.has(parentName);
         if (isFiredBranch) {
           if (name.includes('DANGER')) return '#ff716c';
@@ -132,8 +121,7 @@ export default function BehaviorTreePage() {
           if (name.includes('INTERLEAVING')) return '#fdd34d';
           if (name.includes('DEFAULT') || name.includes('CAT')) return '#ffffff';
         }
-        
-        // Dimly lit if evaluated but failed condition
+
         if (evaluatedBranches.has(name) && !firedBranches.has(name)) {
           return 'rgba(255,255,255,0.2)';
         }
@@ -146,7 +134,6 @@ export default function BehaviorTreePage() {
         return (firedBranches.has(name) || firedBranches.has(parentName)) ? 3 : 1.5;
       });
 
-    // Nodes
     const nodeW = 135;
     const nodeH = 50;
 
@@ -156,7 +143,6 @@ export default function BehaviorTreePage() {
       .attr('class', 'btNode')
       .attr('transform', d => `translate(${d.x},${d.y})`);
 
-    // Main Node Rectangle
     node.append('rect')
       .attr('width', nodeW).attr('height', nodeH)
       .attr('x', -nodeW / 2).attr('y', -nodeH / 2)
@@ -165,7 +151,7 @@ export default function BehaviorTreePage() {
         const name = d.data.name || '';
         const parentName = d.parent ? d.parent.data.name : '';
         const isFired = firedBranches.has(name) || firedBranches.has(parentName);
-        
+
         if (isFired) {
           if (name.includes('DANGER') || parentName.includes('DANGER')) return 'rgba(255,113,108,0.2)';
           if (name.includes('FATIGUE') || parentName.includes('FATIGUE')) return 'rgba(253,211,77,0.2)';
@@ -195,7 +181,6 @@ export default function BehaviorTreePage() {
         return isFired ? 'url(#btGlow)' : 'none';
       });
 
-    // Node Name Text
     node.append('text')
       .attr('dy', d => d.data.description ? -4 : 4)
       .attr('text-anchor', 'middle')
@@ -206,7 +191,6 @@ export default function BehaviorTreePage() {
       .attr('font-weight', 700)
       .style('pointer-events', 'none');
 
-    // Node Description / Expression Details (asteval conditions)
     node.append('text')
       .attr('dy', 12)
       .attr('text-anchor', 'middle')
@@ -247,7 +231,7 @@ export default function BehaviorTreePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-surface">
-      {/* Navigation */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -268,7 +252,7 @@ export default function BehaviorTreePage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-8 py-10 flex-grow w-full">
-        {/* Header */}
+        {}
         <header className="mb-8">
           <h1 className="text-4xl font-extrabold font-headline tracking-tight mb-2">Behavior Tree — Decision Architecture</h1>
           <p className="text-on-surface-variant text-lg max-w-2xl">
@@ -277,7 +261,7 @@ export default function BehaviorTreePage() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: State Vector Controls */}
+          {}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-surface-container rounded-3xl p-6 border border-white/5">
               <h2 className="text-lg font-bold font-headline mb-4 flex items-center gap-2">
@@ -286,7 +270,7 @@ export default function BehaviorTreePage() {
               </h2>
 
               <div className="space-y-4">
-                {/* Calibration state */}
+                {}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Calibration State</label>
                   <select
@@ -301,7 +285,7 @@ export default function BehaviorTreePage() {
                   </select>
                 </div>
 
-                {/* Fatigue score */}
+                {}
                 <div>
                   <div className="flex justify-between items-end mb-1">
                     <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fatigue Score</label>
@@ -313,7 +297,7 @@ export default function BehaviorTreePage() {
                   />
                 </div>
 
-                {/* Blame weight */}
+                {}
                 <div>
                   <div className="flex justify-between items-end mb-1">
                     <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Top Blame Weight</label>
@@ -325,7 +309,7 @@ export default function BehaviorTreePage() {
                   />
                 </div>
 
-                {/* Mastery */}
+                {}
                 <div>
                   <div className="flex justify-between items-end mb-1">
                     <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Current Concept Mastery</label>
@@ -337,7 +321,7 @@ export default function BehaviorTreePage() {
                   />
                 </div>
 
-                {/* Streaks */}
+                {}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">✓ Streak</label>
@@ -355,7 +339,7 @@ export default function BehaviorTreePage() {
                   </div>
                 </div>
 
-                {/* θ SE */}
+                {}
                 <div>
                   <div className="flex justify-between items-end mb-1">
                     <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">θ Standard Error</label>
@@ -367,7 +351,7 @@ export default function BehaviorTreePage() {
                   />
                 </div>
 
-                {/* Items in session */}
+                {}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Items in Session</label>
                   <input type="number" min="0" max="100" value={overrides.items_in_session}
@@ -376,7 +360,7 @@ export default function BehaviorTreePage() {
                   />
                 </div>
 
-                {/* Active misconception */}
+                {}
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Active Misconception ID</label>
                   <input type="text" placeholder="e.g. M11 (leave empty for none)"
@@ -394,7 +378,7 @@ export default function BehaviorTreePage() {
               </button>
             </div>
 
-            {/* Result */}
+            {}
             <AnimatePresence>
               {btResult && (
                 <motion.div
@@ -429,7 +413,7 @@ export default function BehaviorTreePage() {
             </AnimatePresence>
           </div>
 
-          {/* Right: Tree Visualization */}
+          {}
           <div className="lg:col-span-8">
             <div className="bg-surface-container rounded-3xl overflow-hidden border border-white/5">
               <div className="p-6 pb-2 flex justify-between items-center">
@@ -448,7 +432,7 @@ export default function BehaviorTreePage() {
                   <svg ref={svgRef} viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: '560px' }} />
                 )}
               </div>
-              {/* Legend */}
+              {}
               <div className="px-6 pb-6 flex flex-wrap gap-4">
                 {[
                   { color: '#ff8f6f', label: 'Selector / Action' },

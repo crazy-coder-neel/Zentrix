@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../supabase'
 import BehaviorTreeVisuals from '../components/BehaviorTreeVisuals'
 import DashboardDAG from '../components/DashboardDAG'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const [user, setUser] = useState(null)
 
-  // IntelliRev Upload State
-  const [uploadTab, setUploadTab] = useState('text') // 'text' | 'pdf' | 'book'
+  const [uploadTab, setUploadTab] = useState('text') 
   const [text, setText] = useState('')
   const [dragging, setDragging] = useState(false)
   const [fileName, setFileName] = useState('')
@@ -27,6 +27,7 @@ export default function DashboardPage() {
   }
 
   const handleSubmit = async () => {
+    if (!user) { setUploadError('Please login to upload.'); return }
     if (uploadTab === 'text' && text.trim().length < 50) { setUploadError('Enter at least 50 characters.'); return }
     if ((uploadTab === 'pdf' || uploadTab === 'book') && !file) { setUploadError('Select a PDF.'); return }
 
@@ -35,7 +36,7 @@ export default function DashboardPage() {
 
     try {
       const formData = new FormData()
-      formData.append('user_id', USER_ID)
+      formData.append('user_id', user.id)
       let endpoint = `${API}/intellirev/upload`
 
       if (uploadTab === 'text') {
@@ -64,14 +65,21 @@ export default function DashboardPage() {
   const [irtData, setIrtData] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API}/api/mastery/default`).then(r => r.json()),
-      fetch(`${API}/api/irt/student/default`).then(r => r.json())
-    ]).then(([mastery, irt]) => {
-      setMasteryData(mastery);
-      setIrtData(irt);
-    }).catch(console.error);
-  }, []);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+        Promise.all([
+          fetch(`${API}/api/mastery/${user.id}`).then(r => r.json()),
+          fetch(`${API}/api/irt/student/${user.id}`).then(r => r.json())
+        ]).then(([mastery, irt]) => {
+          setMasteryData(mastery);
+          setIrtData(irt);
+        }).catch(console.error);
+      } else {
+        navigate('/login');
+      }
+    });
+  }, [navigate]);
 
   const numConcepts = masteryData ? Object.keys(masteryData.mastery || {}).length : 0;
   const avgMastery = numConcepts > 0 
@@ -81,7 +89,7 @@ export default function DashboardPage() {
 
   const brierScore = irtData ? irtData.rolling_brier_score.toFixed(3) : 0.12;
   const calibrationState = irtData ? irtData.calibration_state : "well_calibrated";
-  
+
   const getCalibrationDesc = (state) => {
     switch(state) {
         case "well_calibrated": return "Confidence calibration is excellent. Student predicts own performance with high accuracy.";
@@ -94,7 +102,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* TopAppBar */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -118,7 +126,7 @@ export default function DashboardPage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-8 py-10 flex-grow w-full">
-        {/* Header */}
+        {}
         <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">Welcome back, Curator.</h1>
@@ -126,7 +134,7 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* ═══ INTELLIREV UPLOAD SECTION ═══ */}
+        {}
         <section className="mb-10" id="intellirev">
           <div className="bg-gradient-to-br from-primary/10 to-secondary/5 border border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/5">
             <div className="flex items-center gap-3 mb-6">
@@ -140,9 +148,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Upload Card */}
+              {}
               <div className="bg-surface-container/80 border border-white/5 rounded-2xl p-6">
-                {/* Tabs */}
+                {}
                 <div className="flex bg-black/40 p-1 rounded-xl mb-5 w-fit">
                   {[{ key: 'text', label: 'Paste Text' }, { key: 'pdf', label: 'Syllabus PDF' }].map(t => (
                     <button key={t.key} onClick={() => setUploadTab(t.key)}
@@ -196,7 +204,7 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* Profile Card & Info Card */}
+              {}
               <div className="space-y-4 flex flex-col justify-between">
                 <div className="bg-surface-container/80 border border-white/5 rounded-2xl p-6 flex-1 flex flex-col justify-center relative overflow-hidden group">
                   <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform">
@@ -208,7 +216,7 @@ export default function DashboardPage() {
                     Open Dashboard Profile →
                   </Link>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 text-center">
                     <div className="text-xl font-black text-primary">0</div>
@@ -228,9 +236,9 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* ═══ BENTO GRID ═══ */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          {/* ─── Knowledge DAG ─── */}
+          {}
           <section className="md:col-span-8 bg-surface-container rounded-3xl overflow-hidden relative flex flex-col" id="dag">
             <div className="p-8 pb-4 flex justify-between items-center relative z-10">
               <div>
@@ -256,7 +264,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* ─── Mastery Archetypes ─── */}
+          {}
           <section className="md:col-span-4 grid grid-cols-1 gap-6">
             <div className="bg-tertiary text-on-tertiary-fixed rounded-3xl p-8 flex flex-col justify-between min-h-[240px] shadow-2xl transition-transform hover:-translate-y-1">
               <div>
@@ -289,7 +297,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* ─── Behavior Tree ─── */}
+          {}
           <section className="md:col-span-12 bg-surface-container rounded-3xl overflow-hidden" id="behavior-tree">
             <div className="p-8 pb-0 flex justify-between items-center">
               <div>
@@ -301,7 +309,7 @@ export default function DashboardPage() {
             <BehaviorTreeVisuals />
           </section>
 
-          {/* ─── Active Session ─── */}
+          {}
           <section className="md:col-span-7 bg-surface-container-low rounded-3xl overflow-hidden shadow-sm" id="session">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-surface-container">
               <div className="flex items-center gap-3">
@@ -329,7 +337,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* ─── Recent Trajectory ─── */}
+          {}
           <section className="md:col-span-5 bg-surface-container rounded-3xl p-8 shadow-sm flex flex-col justify-between">
             <div>
               <h2 className="text-xl font-bold font-headline mb-6">Error History &amp; Trajectory</h2>
@@ -361,7 +369,7 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* ═══ Featured Resource ═══ */}
+        {}
         <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 relative h-[280px] rounded-3xl overflow-hidden group">
             <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFa6l8kG6W4Np_nNChY5R4zexO21KnMakjRFPngzfRtMBgMA4mh4gbQO2UGRbIjgwc1gufuI1Byv_0d1PCv-p6iQQ7li0g3p6aVOuGGPd4B7YAqhMqiRsfTyRLn5ZqXoHTCaSr9ZOn8Pzv9ns-AXHg4HbVQXVUpAxLpEwPEy3__TO1R4Rm7CDFdW2VAbhl3T8vO8JDqVCVgZlHu6xs1tzDP_RDhZsKVuaMmFslW8BtrdsOtxURjFHrRyor6HzoIPb3AiWyKrirGbJR" alt="Neural network visualization" />
@@ -395,7 +403,7 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      {/* FAB */}
+      {}
       <Link to="/quiz-generator" title="Start New Diagnostic" className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
         <span className="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add</span>
       </Link>

@@ -150,7 +150,7 @@
   background: var(--text-primary);
   border-radius: 2px;
 }
-/* Mobile nav */
+
 .mobileNav {
   position: fixed;
   inset: 0;

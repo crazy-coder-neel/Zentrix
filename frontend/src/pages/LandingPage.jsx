@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export default function LandingPage() {
   return (
     <>
-      {/* Navbar */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <div className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</div>
@@ -25,7 +25,7 @@ export default function LandingPage() {
       </nav>
 
       <main>
-        {/* ═══ HERO ═══ */}
+        {}
         <section className="relative pt-24 pb-36 overflow-hidden">
           <div className="max-w-7xl mx-auto px-8 relative z-10">
             <div className="max-w-4xl">
@@ -48,14 +48,14 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          {/* Background image */}
+          {}
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-30 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-l from-primary/20 to-transparent"></div>
             <img className="w-full h-full object-cover mix-blend-overlay" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_4fFA_hfdcG6yFXCHYjvDXsmEOBdR0dxR5sKDah0wEgRrEs1PF3XgCpb-5bfSOGi2frSRODYpz9-lGxiYNiToOM9Y5AgsQhNMiADGXNdddB_uz7lHct7Yaq5zsF3klUMO2Lchy9TrFU3wtA8kj0dVnuhJyFB18Gcd7A5YG3VNbUR7V22eIoNp5vcKP3Q-3-TutX6YWs6LFUeElnXPUHvj8_Ld2iQqdGoFjHWFPNvxCfWOVKlElJDcntHSjFNTfLrhxPTkPLKpRmcY" alt="Abstract 3D flowing shapes" />
           </div>
         </section>
 
-        {/* ═══ BENTO FEATURES (from PRD sections 6.1–6.8) ═══ */}
+        {}
         <section className="py-24 bg-surface-container-low" id="features">
           <div className="max-w-7xl mx-auto px-8">
             <span className="font-label text-xs uppercase tracking-[0.25em] text-primary font-bold mb-3 block">Core Engine Components</span>
@@ -63,7 +63,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-              {/* Fault Tree Engine — Large orange card */}
+              {}
               <div className="md:col-span-8 bg-primary rounded-3xl p-10 flex flex-col justify-between min-h-[420px] glow-orange relative overflow-hidden group">
                 <div className="relative z-10">
                   <span className="material-symbols-outlined text-4xl text-on-primary mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>account_tree</span>
@@ -80,7 +80,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Error Classifier — Yellow card */}
+              {}
               <div className="md:col-span-4 bg-secondary rounded-3xl p-10 flex flex-col justify-between glow-yellow group">
                 <div>
                   <span className="material-symbols-outlined text-4xl text-on-secondary mb-6">psychology</span>
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Knowledge DAG — Cream/Beige card */}
+              {}
               <div className="md:col-span-5 bg-tertiary rounded-3xl p-10 flex flex-col min-h-[420px] shadow-2xl group">
                 <span className="material-symbols-outlined text-4xl text-on-tertiary mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
                 <h3 className="font-headline text-3xl font-bold text-on-tertiary mb-3">Knowledge DAG</h3>
@@ -125,7 +125,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Behavior Tree — Dark card with interactive preview */}
+              {}
               <div className="md:col-span-7 bg-surface-container rounded-3xl p-10 flex flex-col justify-between relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
@@ -156,7 +156,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ HOW IT WORKS — User Flow from PRD §7 ═══ */}
+        {}
         <section className="py-24" id="how-it-works">
           <div className="max-w-7xl mx-auto px-8">
             <div className="text-center mb-16">
@@ -185,11 +185,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ SYSTEM COMPONENTS — More from PRD ═══ */}
+        {}
         <section className="py-24 bg-surface-container-low" id="system">
           <div className="max-w-7xl mx-auto px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Mastery Model */}
+              {}
               <div className="bg-surface-container rounded-3xl p-8">
                 <span className="material-symbols-outlined text-3xl text-secondary mb-4 block" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
                 <h3 className="font-headline text-xl font-bold mb-3">Mastery Model</h3>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* IRT / Ability Estimation */}
+              {}
               <div className="bg-surface-container rounded-3xl p-8">
                 <span className="material-symbols-outlined text-3xl text-primary mb-4 block" style={{ fontVariationSettings: "'FILL' 1" }}>functions</span>
                 <h3 className="font-headline text-xl font-bold mb-3">Ability Estimation (IRT)</h3>
@@ -214,7 +214,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Confidence Calibration */}
+              {}
               <div className="bg-surface-container rounded-3xl p-8">
                 <span className="material-symbols-outlined text-3xl text-tertiary mb-4 block" style={{ fontVariationSettings: "'FILL' 1" }}>speed</span>
                 <h3 className="font-headline text-xl font-bold mb-3">Confidence Calibration</h3>
@@ -226,7 +226,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Revision Scheduler */}
+            {}
             <div className="mt-6 bg-surface-container rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
                 <span className="material-symbols-outlined text-3xl text-primary mb-4 block" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
@@ -247,7 +247,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ CTA ═══ */}
+        {}
         <section className="py-32 relative">
           <div className="max-w-5xl mx-auto px-8 text-center">
             <h2 className="font-headline text-5xl md:text-7xl font-black mb-8 tracking-tighter">Ready to diagnose<br />root causes?</h2>
@@ -262,7 +262,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* ═══ FOOTER ═══ */}
+      {}
       <footer className="w-full border-t border-white/5 pt-12 pb-8 bg-[#0e0e0e]">
         <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="space-y-6">

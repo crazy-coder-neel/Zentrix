@@ -1,16 +1,12 @@
-"""
-Transcript Service — Fetch YouTube transcripts via youtube-transcript-api.
-No LLMs. No scraping browser sessions.
-"""
+
 import re
 import logging
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-
 def _extract_video_id(url: str) -> Optional[str]:
-    """Extract video ID from various YouTube URL formats."""
+
     patterns = [
         r"(?:v=|youtu\.be/|embed/)([A-Za-z0-9_-]{11})",
     ]
@@ -20,13 +16,8 @@ def _extract_video_id(url: str) -> Optional[str]:
             return match.group(1)
     return None
 
-
 def get_transcript(video_url: str, max_chars: int = 8000) -> Optional[str]:
-    """
-    Fetch and clean transcript from a YouTube video.
-    Returns a cleaned string of up to max_chars characters.
-    Returns None if transcript unavailable.
-    """
+
     video_id = _extract_video_id(video_url)
     if not video_id:
         logger.warning(f"Could not extract video ID from: {video_url}")
@@ -34,27 +25,25 @@ def get_transcript(video_url: str, max_chars: int = 8000) -> Optional[str]:
 
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
-        
-        # Diagnostic: see exactly what what methods we have
+
         methods = dir(YouTubeTranscriptApi)
         print(f"DIAGNOSTIC - YouTubeTranscriptApi methods: {methods}")
 
         transcript_list = []
-        
-        # Try as a static call first (most common)
+
         if 'get_transcript' in methods:
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=["en", "en-US"])
-        # Try as an instance call with fetch (user's documentation version)
+
         else:
             try:
-                # Some versions require instantiation
+
                 ytt_api = YouTubeTranscriptApi()
                 fetch_method = getattr(ytt_api, 'fetch', None)
                 if fetch_method:
                     fetched = ytt_api.fetch(video_id, languages=["en", "en-US"])
                     transcript_list = fetched.to_raw_data() if hasattr(fetched, 'to_raw_data') else list(fetched)
                 else:
-                    # Final fallback: check for any method containing 'transcript'
+
                     sub_methods = [m for m in methods if 'transcript' in m.lower()]
                     print(f"DIAGNOSTIC - Falling back. Detected transcript-related methods: {sub_methods}")
                     raise AttributeError(f"No valid fetch or get_transcript method found. Methods available: {methods}")
@@ -65,13 +54,11 @@ def get_transcript(video_url: str, max_chars: int = 8000) -> Optional[str]:
         if not transcript_list:
             return None
 
-        # Join transcript chunks
         full_text = " ".join(chunk.get("text", "") for chunk in transcript_list)
 
-        # Clean up auto-generated transcript artifacts
-        full_text = re.sub(r'\[.*?\]', '', full_text)       # Remove [Music], [Applause]
+        full_text = re.sub(r'\[.*?\]', '', full_text)       
         full_text = re.sub(r'&amp;', '&', full_text)
-        full_text = re.sub(r'&#39;', "'", full_text)
+        full_text = re.sub(r'&
         full_text = re.sub(r'\s+', ' ', full_text).strip()
 
         return full_text[:max_chars]
@@ -84,12 +71,8 @@ def get_transcript(video_url: str, max_chars: int = 8000) -> Optional[str]:
             logger.warning(f"Transcript error for {video_id}: {type(e).__name__}: {e}")
         return None
 
-
 def get_transcript_with_timestamps(video_url: str) -> list[dict]:
-    """
-    Fetch transcript with timestamps.
-    Returns list of {text, start, duration} dicts.
-    """
+
     video_id = _extract_video_id(video_url)
     if not video_id:
         return []
@@ -97,7 +80,7 @@ def get_transcript_with_timestamps(video_url: str) -> list[dict]:
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
         methods = dir(YouTubeTranscriptApi)
-        
+
         if 'get_transcript' in methods:
             transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["en", "en-US"])
         else:

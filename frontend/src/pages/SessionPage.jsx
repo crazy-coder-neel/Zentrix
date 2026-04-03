@@ -4,10 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API = 'http://localhost:8000';
 
-/* ═══════════════════════════════════════════════
-   SessionPage — Live Tutoring Session Loop
-   Question → Confidence → Submit → Result → Explain → Next
-   ═══════════════════════════════════════════════ */
 export default function SessionPage() {
   const [question, setQuestion] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -19,12 +15,10 @@ export default function SessionPage() {
   const [sessionHistory, setSessionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch first question
   useEffect(() => {
     fetchNextQuestion();
   }, []);
 
-  // Timer
   useEffect(() => {
     if (result) return;
     const interval = setInterval(() => setTimerMs(Date.now() - startTime), 100);
@@ -98,7 +92,6 @@ export default function SessionPage() {
     fetchNextQuestion();
   };
 
-  // Compute session stats from history
   const totalItems = sessionHistory.length;
   const correctItems = sessionHistory.filter(h => h.is_correct).length;
   const currentTheta = result?.irt_update?.theta_after ?? result?.calibration?.theta ?? 0;
@@ -107,7 +100,7 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-surface">
-      {/* Navigation */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -127,7 +120,7 @@ export default function SessionPage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-8 py-10 flex-grow w-full flex flex-col lg:flex-row gap-8">
-        {/* Main content */}
+        {}
         <div className="flex-grow max-w-3xl">
           {loading ? (
             <div className="h-96 bg-surface-container rounded-3xl animate-pulse" />
@@ -142,7 +135,7 @@ export default function SessionPage() {
             </div>
           ) : (
             <div className="bg-surface-container rounded-3xl p-8 shadow-xl relative overflow-hidden">
-              {/* Question header */}
+              {}
               <div className="flex justify-between items-center mb-6">
                 <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">
                   {question.id} — Concept {question.concept_id}
@@ -155,10 +148,10 @@ export default function SessionPage() {
                 </div>
               </div>
 
-              {/* Question stem */}
+              {}
               <h2 className="text-2xl md:text-3xl font-extrabold font-headline mb-8 tracking-tight">{question.stem}</h2>
 
-              {/* Options */}
+              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {Object.entries(question.options).map(([key, option]) => {
                   let cls = 'border-outline-variant/30 hover:border-primary/50 bg-surface-container-low hover:bg-surface-container-highest cursor-pointer';
@@ -184,7 +177,7 @@ export default function SessionPage() {
                 })}
               </div>
 
-              {/* Confidence + Submit OR Result */}
+              {}
               <AnimatePresence mode="wait">
                 {!result ? (
                   <motion.div key="controls" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -213,7 +206,7 @@ export default function SessionPage() {
                   <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     className="space-y-4"
                   >
-                    {/* Result card */}
+                    {}
                     <div className="bg-surface-container-lowest p-6 rounded-2xl border border-white/10">
                       <div className="flex justify-between items-start mb-3">
                         <h3 className="text-xl font-bold font-headline">Result</h3>
@@ -229,12 +222,12 @@ export default function SessionPage() {
                         )}
                       </div>
 
-                      {/* Explanation summary */}
+                      {}
                       {result.explanation?.summary && (
                         <p className="text-sm text-on-surface-variant leading-relaxed mb-4">{result.explanation.summary}</p>
                       )}
 
-                      {/* Misconceptions */}
+                      {}
                       {result.misconception_descriptions?.length > 0 && (
                         <div className="bg-error/5 border border-error/10 p-4 rounded-xl mb-4 relative overflow-hidden">
                           <div className="absolute top-0 left-0 w-1 h-full bg-error rounded-l-xl" />
@@ -250,7 +243,7 @@ export default function SessionPage() {
                         </div>
                       )}
 
-                      {/* BT Decision */}
+                      {}
                       {result.bt_action && (
                         <div className="bg-surface-container p-4 rounded-xl">
                           <div className="flex items-center gap-2 mb-2">
@@ -268,7 +261,7 @@ export default function SessionPage() {
                         </div>
                       )}
 
-                      {/* IRT Update */}
+                      {}
                       {result.irt_update && (
                         <div className="grid grid-cols-2 gap-3 mt-4">
                           <div className="bg-surface-container p-3 rounded-xl text-center">
@@ -283,7 +276,7 @@ export default function SessionPage() {
                       )}
                     </div>
 
-                    {/* Full Decision Trace (expandable) */}
+                    {}
                     <details className="group bg-surface-container-low p-4 rounded-xl border border-white/5">
                       <summary className="font-bold text-sm text-on-surface hover:text-primary transition-colors flex justify-between items-center cursor-pointer outline-none">
                         Full Pipeline Decision Trace
@@ -317,9 +310,9 @@ export default function SessionPage() {
           )}
         </div>
 
-        {/* Sidebar: Session Stats */}
+        {}
         <div className="lg:w-80 shrink-0 space-y-6">
-          {/* Session Stats */}
+          {}
           <div className="bg-surface-container rounded-3xl p-6 border border-white/5">
             <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-4">Session Stats</h3>
             <div className="space-y-4">
@@ -361,7 +354,7 @@ export default function SessionPage() {
             </div>
           </div>
 
-          {/* Session History */}
+          {}
           <div className="bg-surface-container rounded-3xl p-6 border border-white/5">
             <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-4">History</h3>
             {sessionHistory.length === 0 ? (
@@ -382,7 +375,7 @@ export default function SessionPage() {
             )}
           </div>
 
-          {/* Quick Links */}
+          {}
           <div className="bg-primary/10 border border-primary/20 rounded-3xl p-6">
             <h3 className="text-sm font-bold text-primary mb-3">Quick Actions</h3>
             <div className="space-y-2">

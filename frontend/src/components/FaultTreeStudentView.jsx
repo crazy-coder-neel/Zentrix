@@ -8,7 +8,6 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
-  // Simple timer display
   useEffect(() => {
     if (result) return;
     const interval = setInterval(() => {
@@ -17,7 +16,6 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
     return () => clearInterval(interval);
   }, [startTime, result]);
 
-  // Reset when question prop changes
   useEffect(() => {
     reset();
   }, [question.id]);
@@ -35,8 +33,8 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
           answer_selected: selectedAnswer,
           time_taken_ms: timeTakenMs,
           confidence: confidence,
-          error_history: [], // Passed empty for demo
-          prior_error_patterns: [] // Passed empty for demo
+          error_history: [], 
+          prior_error_patterns: [] 
         }),
       });
       const data = await response.json();
@@ -71,7 +69,7 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
         {Object.entries(question.options).map(([key, option]) => {
           let stateClass = "border-outline-variant/30 hover:border-primary/50 bg-surface-container-low hover:bg-surface-container-highest cursor-pointer";
-          
+
           if (result) {
             stateClass = "border-outline-variant/10 opacity-50 cursor-not-allowed bg-surface-container-lowest";
             if (key === question.correct_answer) {
@@ -103,7 +101,7 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
         })}
       </div>
 
-      {/* Control Area */}
+      {}
       {!result ? (
         <div className="bg-surface-container-low p-6 rounded-2xl border border-white/5">
           <div className="mb-6 flex flex-col gap-2 relative">
@@ -152,7 +150,7 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
                   <p>
                     You answered <strong className="text-on-surface">{selectedAnswer} ({question.options[selectedAnswer].text})</strong> with <strong className="text-on-surface">{result.statedConfidence}%</strong> confidence, but the correct answer is <strong className="text-secondary">{question.correct_answer} ({question.options[question.correct_answer].text})</strong>.
                   </p>
-                  
+
                   {result.misconception_descriptions && result.misconception_descriptions.length > 0 ? (
                       <div className="bg-error/5 border border-error/10 p-4 rounded-xl relative overflow-hidden group">
                            <div className="absolute top-0 left-0 w-1 h-full bg-error rounded-l-xl"></div>

@@ -15,22 +15,20 @@ class EvalCondition(py_trees.behaviour.Behaviour):
         super().__init__(name=name)
         self.expression = expression
         self.aeval = Interpreter()
-        
+
     def update(self) -> common.Status:
-        # Get blackboard state
+
         bb = py_trees.blackboard.Client(name=self.name)
         bb.register_key(key="state", access=py_trees.common.Access.READ)
         state_dict = bb.state
-        
-        # Add variables to asteval symbol table
+
         for k, v in state_dict.items():
             self.aeval.symtable[k] = v
-            
+
         result = self.aeval(self.expression)
-        
-        # Check trace list
+
         trace_logger = bb.get("trace_logger")
-        
+
         if result is True:
             if trace_logger is not None:
                 trace_logger.append({"branch": self.name, "fired": True})
@@ -51,11 +49,10 @@ class ActionNode(py_trees.behaviour.Behaviour):
         bb = py_trees.blackboard.Client(name=self.name)
         bb.register_key(key="state", access=py_trees.common.Access.READ)
         state_dict = bb.state
-        
+
         params = self.params_extractor(state_dict)
         reason = self.reason_template.format(**state_dict)
-        
-        # Save output to blackboard
+
         bb.register_key(key="output_action", access=py_trees.common.Access.WRITE)
         bb.output_action = {
             "type": self.action_type,
@@ -64,10 +61,8 @@ class ActionNode(py_trees.behaviour.Behaviour):
         }
         return common.Status.SUCCESS
 
-# Setup tree
 root = py_trees.composites.Selector(name="ROOT", memory=False)
 
-# Branch 1
 danger_seq = py_trees.composites.Sequence(name="DANGER_ZONE", memory=False)
 danger_cond = EvalCondition("Check Overconfident Misconception", "calibration_state == 'overconfident' and active_misconception_id is not None")
 danger_act = ActionNode("Contrast Case", "CONTRAST_CASE", "Overconfident + confirmed misconception {active_misconception_id}.", lambda s: {"misconception_id": s.get("active_misconception_id")})
@@ -75,7 +70,6 @@ danger_seq.add_children([danger_cond, danger_act])
 
 root.add_child(danger_seq)
 
-# test tick
 py_trees.blackboard.Blackboard.set("state", {"calibration_state": "overconfident", "active_misconception_id": "M01"})
 py_trees.blackboard.Blackboard.set("trace_logger", [])
 

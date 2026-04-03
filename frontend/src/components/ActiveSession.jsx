@@ -4,7 +4,7 @@ import styles from './ActiveSession.module.css'
 
 const codeLines = [
   { num: '01', content: <><span className="syn-kw">import</span> Episteme.Logic.Roots</> },
-  { num: '02', content: <><span className="syn-cm">// Analyze the discriminatory function</span></> },
+  { num: '02', content: <><span className="syn-cm">
   { num: '03', content: <><span className="syn-kw">fn</span> <span className="syn-fn">resolve_complex</span>(a, b, c) {'{'}</> },
   { num: '04', content: <>&nbsp;&nbsp;<span className="syn-kw">let</span> delta = b**2 - 4*a*c;</> },
   { num: '05', content: <>&nbsp;&nbsp;<span className="syn-kw">return</span> delta.<span className="syn-fn">as_imaginary</span>();</> },
@@ -30,7 +30,7 @@ export default function ActiveSession() {
         </div>
 
         <div className={styles.grid}>
-          {/* Code Editor */}
+          {}
           <motion.div
             className={styles.codeCard}
             data-aos="fade-right"
@@ -68,9 +68,9 @@ export default function ActiveSession() {
             </div>
           </motion.div>
 
-          {/* Right Panel */}
+          {}
           <div className={styles.rightPanel}>
-            {/* Trajectory */}
+            {}
             <motion.div
               className={styles.trajectoryCard}
               data-aos="fade-left"
@@ -97,7 +97,7 @@ export default function ActiveSession() {
               ))}
             </motion.div>
 
-            {/* Revision */}
+            {}
             <motion.div
               className={styles.revisionCard}
               data-aos="fade-left"

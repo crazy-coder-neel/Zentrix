@@ -1,16 +1,4 @@
-"""
-Mastery Tracker — per-concept mastery scoring with retention decay.
 
-Calculates mastery as a weighted combination of:
-  - Recent quiz accuracy    (50%) — last N questions on this concept
-  - Practice session accuracy (30%) — all-time on this concept
-  - Retention score          (20%) — decays 5% per day without review
-
-Thresholds:
-  - 0–59:   Weak       — concept locked, triggers active repair
-  - 60–79:  Developing — can proceed, review scheduled
-  - 80–100: Strong     — dependents unlocked, enters spaced review
-"""
 
 from __future__ import annotations
 
@@ -21,45 +9,24 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .dag import ConceptDAG
 
-
 class MasteryTracker:
-    """
-    Tracks per-concept mastery for a single student session.
 
-    Usage:
-        tracker = MasteryTracker()
-        tracker.record_response("C09", correct=False, misconception_ids={"M11"})
-        tracker.record_response("C09", correct=True)
-        mastery = tracker.get_mastery("C09")
-    """
-
-    # Configurable weights (must sum to 1.0)
     WEIGHT_RECENT = 0.50
     WEIGHT_ALLTIME = 0.30
     WEIGHT_RETENTION = 0.20
 
-    # Retention decay rate per day
     RETENTION_DECAY_RATE = 0.05
 
-    # How many recent questions to consider
     RECENT_WINDOW = 5
 
     def __init__(self, initial_mastery: dict[str, float] | None = None):
-        """
-        Args:
-            initial_mastery: Pre-existing mastery scores {concept_id: 0-100}.
-                             Used when loading a returning student's state.
-        """
-        # Per-concept response history: concept_id → [(correct: bool, timestamp)]
+
         self._history: dict[str, list[tuple[bool, float]]] = {}
 
-        # Initialised mastery scores
         self._mastery: dict[str, float] = dict(initial_mastery or {})
 
-        # Timestamp of the last review per concept
         self._last_review: dict[str, float] = {}
 
-        # Mastery value at the time of last review (for retention decay)
         self._mastery_at_last_review: dict[str, float] = {}
 
     def record_response(
@@ -68,27 +35,15 @@ class MasteryTracker:
         correct: bool,
         timestamp: float | None = None,
     ) -> float:
-        """
-        Record a student response and recompute mastery for the concept.
 
-        Args:
-            concept_id: The concept being tested.
-            correct: Whether the student answered correctly.
-            timestamp: Unix timestamp (defaults to now).
-
-        Returns:
-            Updated mastery score (0-100).
-        """
         ts = timestamp or time.time()
 
         if concept_id not in self._history:
             self._history[concept_id] = []
         self._history[concept_id].append((correct, ts))
 
-        # Update last review timestamp
         self._last_review[concept_id] = ts
 
-        # Recompute mastery
         mastery = self._compute_mastery(concept_id, ts)
         self._mastery[concept_id] = mastery
         self._mastery_at_last_review[concept_id] = mastery
@@ -96,21 +51,16 @@ class MasteryTracker:
         return mastery
 
     def _compute_mastery(self, concept_id: str, now: float) -> float:
-        """
-        mastery = 0.50 × recent_accuracy + 0.30 × alltime_accuracy + 0.20 × retention
-        """
+
         history = self._history.get(concept_id, [])
         if not history:
             return self._mastery.get(concept_id, 0)
 
-        # Recent accuracy: last RECENT_WINDOW items
         recent = history[-self.RECENT_WINDOW:]
         recent_accuracy = sum(1 for c, _ in recent if c) / len(recent) * 100
 
-        # All-time accuracy
         alltime_accuracy = sum(1 for c, _ in history if c) / len(history) * 100
 
-        # Retention score: decays from last-reviewed mastery
         retention = self._compute_retention(concept_id, now)
 
         mastery = (
@@ -119,13 +69,10 @@ class MasteryTracker:
             + self.WEIGHT_RETENTION * retention
         )
 
-        # Clamp to [0, 100]
         return max(0.0, min(100.0, mastery))
 
     def _compute_retention(self, concept_id: str, now: float) -> float:
-        """
-        retention = mastery_at_last_review × e^(-0.05 × days_since_review)
-        """
+
         last_mastery = self._mastery_at_last_review.get(concept_id, 0)
         last_review = self._last_review.get(concept_id)
 
@@ -136,20 +83,15 @@ class MasteryTracker:
         return last_mastery * math.exp(-self.RETENTION_DECAY_RATE * days_elapsed)
 
     def get_mastery(self, concept_id: str) -> float:
-        """Get the current mastery score for a concept (0-100)."""
+
         return self._mastery.get(concept_id, 0)
 
     def get_all_mastery(self) -> dict[str, float]:
-        """Get all mastery scores as a dict."""
+
         return dict(self._mastery)
 
     def get_mastery_state(self, concept_id: str) -> str:
-        """
-        Return the human-readable mastery state:
-          weak       (0-59)
-          developing (60-79)
-          strong     (80-100)
-        """
+
         score = self.get_mastery(concept_id)
         if score >= 80:
             return "strong"
@@ -160,7 +102,7 @@ class MasteryTracker:
     def get_concept_summary(
         self, concept_id: str, dag: ConceptDAG | None = None
     ) -> dict:
-        """Return a summary dict for a concept's mastery status."""
+
         history = self._history.get(concept_id, [])
         summary = {
             "concept_id": concept_id,
@@ -176,7 +118,7 @@ class MasteryTracker:
         return summary
 
     def get_all_summaries(self, dag: ConceptDAG | None = None) -> list[dict]:
-        """Return mastery summaries for all tracked concepts."""
+
         concept_ids = set(self._mastery.keys()) | set(self._history.keys())
         return [
             self.get_concept_summary(cid, dag)
@@ -184,7 +126,7 @@ class MasteryTracker:
         ]
 
     def to_serializable(self) -> dict:
-        """Return a JSON-serializable snapshot of the mastery state."""
+
         return {
             "mastery": {k: round(v, 2) for k, v in self._mastery.items()},
             "history_counts": {

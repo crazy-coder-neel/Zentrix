@@ -4,7 +4,7 @@ import styles from './Hero.module.css'
 export default function Hero() {
   return (
     <section className={styles.hero} id="dashboard">
-      {/* Background effects */}
+      {}
       <div className={styles.grid} />
       <div className={`${styles.orb} ${styles.orbPurple}`} />
       <div className={`${styles.orb} ${styles.orbCyan}`} />

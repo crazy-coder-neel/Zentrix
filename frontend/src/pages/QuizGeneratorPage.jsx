@@ -7,14 +7,12 @@ export default function QuizGeneratorPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const navigate = useNavigate()
 
-  // Dummy existing resources (the "Notebooks")
   const [resources, setResources] = useState([
     { id: 1, type: 'pdf', name: 'Algebra 1 - Quadratic Equations', date: '2 days ago', selected: true },
     { id: 2, type: 'youtube', name: 'Factoring Polynomials Overview', date: '5 days ago', selected: false },
     { id: 3, type: 'pdf', name: 'Functions and Identities Worksheet', date: '1 week ago', selected: false },
   ])
 
-  // Context for main view
   const [showAddNew, setShowAddNew] = useState(false)
 
   const toggleResource = (id) => {
@@ -40,7 +38,7 @@ export default function QuizGeneratorPage() {
 
   const handleGenerate = () => {
     setIsGenerating(true)
-    // Simulate generation time
+
     setTimeout(() => {
       navigate('/quiz')
     }, 2000)
@@ -50,7 +48,7 @@ export default function QuizGeneratorPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0e0e0e] text-on-surface">
-      {/* TopAppBar */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -64,8 +62,8 @@ export default function QuizGeneratorPage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-4 md:px-8 py-8 flex-grow w-full grid grid-cols-1 md:grid-cols-12 gap-8 relative">
-        
-        {/* Left Sidebar - Knowledge Sources */}
+
+        {}
         <section className="md:col-span-4 lg:col-span-3 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
@@ -80,7 +78,7 @@ export default function QuizGeneratorPage() {
               <span className="material-symbols-outlined text-[20px]">add</span>
             </button>
           </div>
-          
+
           <div className="space-y-3 flex-grow overflow-y-auto pr-2 pb-10">
             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 mt-4">Active Knowledge Base</p>
             {resources.map(res => (
@@ -118,7 +116,7 @@ export default function QuizGeneratorPage() {
           </div>
         </section>
 
-        {/* Right Main Area */}
+        {}
         <section className="md:col-span-8 lg:col-span-9 flex flex-col">
           {showAddNew ? (
             <div className="bg-surface-container rounded-3xl p-8 lg:p-12 shadow-2xl relative overflow-hidden" data-aos="fade-in">
@@ -135,7 +133,7 @@ export default function QuizGeneratorPage() {
                 </button>
               </div>
 
-              {/* Tabs */}
+              {}
               <div className="flex bg-surface-container-low rounded-2xl p-1 mb-8 relative z-10 w-full max-w-md">
                 <button 
                   onClick={() => setActiveTab('pdf')}
@@ -195,13 +193,13 @@ export default function QuizGeneratorPage() {
           ) : (
             <div className="flex-grow flex flex-col items-center justify-center h-full rounded-3xl relative" data-aos="fade-in">
               <div className="absolute inset-0 bg-gradient-radial from-primary/5 to-transparent pointer-events-none opacity-50"></div>
-              
+
               <div className="text-center max-w-xl z-10 px-6">
                 <div className="inline-flex items-center justify-center p-5 bg-surface-container-low rounded-3xl mb-8 shadow-inner relative">
                   <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full"></div>
                   <span className="material-symbols-outlined text-6xl text-primary relative z-10">model_training</span>
-                  
-                  {/* Floating selected counts */}
+
+                  {}
                   {selectedCount > 0 && (
                     <div className="absolute -top-3 -right-3 bg-secondary text-on-secondary w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-xl z-20 animate-bounce">
                       {selectedCount}
@@ -212,7 +210,7 @@ export default function QuizGeneratorPage() {
                 <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-4">
                   {selectedCount > 0 ? 'Ready to Synthesize' : 'Select Sources to Begin'}
                 </h1>
-                
+
                 <p className="text-on-surface-variant text-lg mb-10 leading-relaxed">
                   {selectedCount > 0 
                     ? `You've selected ${selectedCount} resource${selectedCount > 1 ? 's' : ''}. Episteme will cross-reference these materials to generate a highly diagnostic fault-tree quiz.`

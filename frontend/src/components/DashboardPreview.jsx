@@ -40,9 +40,9 @@ export default function DashboardPreview() {
     <section className={styles.section}>
       <div className={styles.container}>
         <div className={styles.grid}>
-          {/* Left Column */}
+          {}
           <div className={styles.left}>
-            {/* Welcome Card */}
+            {}
             <motion.div
               className={styles.welcomeCard}
               data-aos="fade-up"
@@ -77,7 +77,7 @@ export default function DashboardPreview() {
               </div>
             </motion.div>
 
-            {/* DAG Card */}
+            {}
             <motion.div className={styles.dagCard} data-aos="fade-up" data-aos-delay="150">
               <div className={styles.dagHeader}>
                 <div>
@@ -87,7 +87,7 @@ export default function DashboardPreview() {
                 <div className={styles.dagIcon}>⟁</div>
               </div>
 
-              {/* Interactive DAG Visualization */}
+              {}
               <div className={styles.dagViz}>
                 <DashboardDAG />
               </div>
@@ -114,9 +114,9 @@ export default function DashboardPreview() {
             </motion.div>
           </div>
 
-          {/* Right Column */}
+          {}
           <div className={styles.right}>
-            {/* Mastery Ring Card */}
+            {}
             <motion.div className={styles.masteryCard} data-aos="fade-left">
               <h3 className={styles.masteryTitle}>Mastery Archetypes</h3>
               <span className={styles.masterySub}>Cognitive alignment visualization</span>
@@ -163,7 +163,7 @@ export default function DashboardPreview() {
               </div>
             </motion.div>
 
-            {/* Neural Sync Card */}
+            {}
             <motion.div
               className={styles.neuralCard}
               data-aos="fade-left"

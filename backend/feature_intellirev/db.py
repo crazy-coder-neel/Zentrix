@@ -1,13 +1,10 @@
-"""
-Supabase client singleton — lazy-initialized.
-"""
+
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 _client = None
-
 
 def get_client():
     global _client

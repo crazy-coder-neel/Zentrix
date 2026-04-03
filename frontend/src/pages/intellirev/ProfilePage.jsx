@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../supabase'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001'
 
-// GitHub-style heatmap (52 weeks x 7 days)
 function ConsistencyGrid({ activity }) {
   const weeks = 20
   const days = 7
   const today = new Date()
 
-  // Build a date -> count map
   const dateMap = {}
   ;(activity || []).forEach(a => { dateMap[a.date] = a.count })
 
@@ -55,39 +53,39 @@ function ConsistencyGrid({ activity }) {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.allSettled([
-      fetch(`${API}/intellirev/profile/${USER_ID}`).then(r => r.json()),
-      fetch(`${API}/intellirev/leaderboard`).then(r => r.json()),
-    ]).then(([profileRes, lbRes]) => {
-      if (profileRes.status === 'fulfilled') setProfile(profileRes.value)
-      else setProfile({
-        user_id: USER_ID, total_score: 0, streak: 0,
-        weak_topics: [], activity: [], revision_schedule: [],
-      })
-      if (lbRes.status === 'fulfilled') setLeaderboard(lbRes.value.leaderboard || [])
-      setLoading(false)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUser(user);
+        Promise.allSettled([
+          fetch(`${API}/intellirev/profile/${user.id}`).then(r => r.json()),
+          fetch(`${API}/intellirev/leaderboard`).then(r => r.json()),
+        ]).then(([profileRes, lbRes]) => {
+          if (profileRes.status === 'fulfilled') setProfile(profileRes.value)
+          else setProfile({
+            user_id: user.id, total_score: 0, streak: 0,
+            weak_topics: [], activity: [], revision_schedule: [],
+          })
+          if (lbRes.status === 'fulfilled') setLeaderboard(lbRes.value.leaderboard || [])
+          setLoading(false)
+        })
+      } else {
+        navigate('/login')
+      }
     })
-  }, [])
+  }, [navigate])
 
-  // Demo profile if backend is not running
   const displayProfile = profile || {
-    user_id: USER_ID, total_score: 320, streak: 5,
-    weak_topics: [
-      { topic_name: 'Neural Networks', weakness_score: 8, confidence_score: 41.0, classification: 'weak' },
-      { topic_name: 'Gradient Descent', weakness_score: 5, confidence_score: 58.4, classification: 'medium' },
-      { topic_name: 'Backpropagation', weakness_score: 3, confidence_score: 72.1, classification: 'medium' },
-      { topic_name: 'Transformers', weakness_score: 1, confidence_score: 85.0, classification: 'strong' },
-    ],
+    user_id: user?.id || 'loading', total_score: 0, streak: 0,
+    weak_topics: [],
     activity: [],
-    revision_schedule: [
-      { topic_id: 't1', next_revision: new Date().toISOString().split('T')[0], classification: 'weak' },
-      { topic_id: 't2', next_revision: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0], classification: 'medium' },
-    ],
+    revision_schedule: [],
   }
 
   const clsColor = (c) => c === 'strong' ? 'text-green-400' : c === 'medium' ? 'text-yellow-400' : 'text-red-400'
@@ -119,9 +117,9 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Stats + Heatmap */}
+          {}
           <div className="lg:col-span-2 space-y-6">
-            {/* Stats row */}
+            {}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: 'Total Score', value: displayProfile.total_score, icon: 'emoji_events', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
@@ -137,7 +135,7 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            {/* Consistency Heatmap */}
+            {}
             <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -158,7 +156,7 @@ export default function ProfilePage() {
               <ConsistencyGrid activity={displayProfile.activity} />
             </div>
 
-            {/* Weak Topics */}
+            {}
             <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-red-400" style={{ fontVariationSettings: "'FILL' 1" }}>trending_down</span>
@@ -192,9 +190,9 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Right: Revision Schedule + Leaderboard */}
+          {}
           <div className="space-y-6">
-            {/* Revision Schedule */}
+            {}
             <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>event_repeat</span>
@@ -226,7 +224,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Leaderboard */}
+            {}
             <div className="bg-surface-container border border-primary/20 rounded-2xl p-6">
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-yellow-400" style={{ fontVariationSettings: "'FILL' 1" }}>leaderboard</span>
@@ -260,7 +258,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Quick nav */}
+            {}
             <div className="space-y-2">
               <Link to="/" className="flex items-center gap-3 bg-surface-container border border-white/5 hover:border-primary/30 text-stone-400 hover:text-white rounded-xl p-4 transition-all text-sm">
                 <span className="material-symbols-outlined text-primary">dashboard</span>

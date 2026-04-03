@@ -33,37 +33,29 @@ app.add_middleware(
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
 
-# ─────────────────────────────────────────────────────────────────
-# Initialise engines at startup
-# ─────────────────────────────────────────────────────────────────
 concept_dag = ConceptDAG()
 behavior_tree = BehaviorTree()
 explainability = ExplainabilityEngine()
 
-# In-memory per-session trackers (keyed by student_id)
 _student_trackers: dict[str, MasteryTracker] = {}
 _irt_trackers: dict[str, IRTTracker] = {}
 _review_queues: dict[str, ReviewQueue] = {}
-_learner_states: dict[str, dict] = {}  # raw state dicts for BT
-
+_learner_states: dict[str, dict] = {}  
 
 def _get_tracker(student_id: str) -> MasteryTracker:
     if student_id not in _student_trackers:
         _student_trackers[student_id] = MasteryTracker()
     return _student_trackers[student_id]
 
-
 def _get_irt_tracker(student_id: str) -> IRTTracker:
     if student_id not in _irt_trackers:
         _irt_trackers[student_id] = IRTTracker()
     return _irt_trackers[student_id]
 
-
 def _get_review_queue(student_id: str) -> ReviewQueue:
     if student_id not in _review_queues:
         _review_queues[student_id] = ReviewQueue()
     return _review_queues[student_id]
-
 
 def _get_learner_state(student_id: str) -> dict:
     if student_id not in _learner_states:
@@ -85,22 +77,15 @@ def _get_learner_state(student_id: str) -> dict:
         }
     return _learner_states[student_id]
 
-
 def load_questions():
     if not os.path.exists(DATA_PATH):
         return []
     with open(DATA_PATH, "r") as f:
         return json.load(f)
 
-
-# ─────────────────────────────────────────────────────────────────
-# Request / Response Models
-# ─────────────────────────────────────────────────────────────────
-
 class ErrorHistoryItem(BaseModel):
     concept_id: str
     answer_selected: str
-
 
 class EvaluateRequest(BaseModel):
     question_id: str
@@ -111,7 +96,6 @@ class EvaluateRequest(BaseModel):
     error_history: List[ErrorHistoryItem] = []
     prior_error_patterns: List[str] = []
 
-
 class BlameRequest(BaseModel):
     misconception_ids: List[str]
     mastery: Dict[str, float] = {}
@@ -119,20 +103,17 @@ class BlameRequest(BaseModel):
     decay: float = 0.6
     max_items: int = 5
 
-
 class MasteryUpdateRequest(BaseModel):
     student_id: str = "default"
     concept_id: str
     correct: bool
 
-
 class BTTickRequest(BaseModel):
     student_id: str = "default"
     state_overrides: Dict = {}
 
-
 class SessionProcessRequest(BaseModel):
-    """Full pipeline request: answer + evaluate + BT tick."""
+
     student_id: str = "default"
     question_id: str
     answer_selected: str
@@ -141,20 +122,13 @@ class SessionProcessRequest(BaseModel):
     error_history: List[ErrorHistoryItem] = []
     prior_error_patterns: List[str] = []
 
-
 class AuthRequest(BaseModel):
     email: str
     password: str
     name: str = ""
 
-
 class NextQuestionRequest(BaseModel):
     student_id: str = "default"
-
-
-# ─────────────────────────────────────────────────────────────────
-# Feature 1 — Questions & Fault Tree
-# ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/questions")
 def get_all_questions():
@@ -174,7 +148,6 @@ def get_all_questions():
         results.append(client_q)
     return results
 
-
 @app.get("/api/questions/{question_id}")
 def get_question(question_id: str):
     questions = load_questions()
@@ -192,25 +165,15 @@ def get_question(question_id: str):
             }
     raise HTTPException(status_code=404, detail="Question not found")
 
-
 @app.post("/api/evaluate")
 def evaluate_answer(req: EvaluateRequest):
-    """
-    Full diagnostic pipeline:
-      1. Classify error (slip / lapse / mistake)
-      2. Run fault tree → minimal cut set
-      3. Map misconceptions → concepts via DAG
-      4. Run blame backpropagation → repair queue
-      5. Update mastery tracking
-      6. Update IRT
-    """
+
     questions = load_questions()
     question = next((q for q in questions if q["id"] == req.question_id), None)
 
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    # 1. Classify Error
     error_type = classify_error(
         question,
         req.answer_selected,
@@ -221,11 +184,9 @@ def evaluate_answer(req: EvaluateRequest):
     is_correct = error_type == "correct"
     concept_id = question["concept_id"]
 
-    # Update mastery tracker
     tracker = _get_tracker(req.student_id)
     tracker.record_response(concept_id, correct=is_correct)
 
-    # Update IRT tracker
     irt_tracker = _get_irt_tracker(req.student_id)
     irt_tracker.record_response(
         req.question_id,
@@ -250,7 +211,6 @@ def evaluate_answer(req: EvaluateRequest):
         "calibration": irt_tracker.get_state_summary(),
     }
 
-    # 2. Run Fault Tree if not correct and not a slip
     if not is_correct and error_type != "slip":
         fault_tree = get_fault_tree(question)
 
@@ -274,7 +234,6 @@ def evaluate_answer(req: EvaluateRequest):
             for mc in mcs
         ]
 
-        # 3. Blame backpropagation
         if mcs:
             mastery = tracker.get_all_mastery()
             repair_queue = get_repair_queue(
@@ -284,7 +243,6 @@ def evaluate_answer(req: EvaluateRequest):
             if repair_queue:
                 result["top_repair_target"] = repair_queue[0]
 
-    # Save to Supabase if connected
     save_session_response(req.student_id, {
         "question_id": req.question_id,
         "answer_selected": req.answer_selected,
@@ -297,11 +255,6 @@ def evaluate_answer(req: EvaluateRequest):
 
     return result
 
-
-# ─────────────────────────────────────────────────────────────────
-# Feature 2 — Prerequisite DAG + Blame Backpropagation
-# ─────────────────────────────────────────────────────────────────
-
 @app.get("/api/dag")
 def get_dag(student_id: Optional[str] = None):
     mastery = None
@@ -309,7 +262,6 @@ def get_dag(student_id: Optional[str] = None):
         tracker = _get_tracker(student_id)
         mastery = tracker.get_all_mastery()
     return concept_dag.to_serializable(mastery)
-
 
 @app.get("/api/dag/concept/{concept_id}")
 def get_concept(concept_id: str, student_id: Optional[str] = None):
@@ -337,7 +289,6 @@ def get_concept(concept_id: str, student_id: Optional[str] = None):
         "state": concept_dag.get_concept_state(concept_id, mastery),
     }
 
-
 @app.get("/api/dag/topological-order")
 def get_topological_order():
     order = concept_dag.topological_order()
@@ -349,7 +300,6 @@ def get_topological_order():
         }
         for cid in order
     ]
-
 
 @app.post("/api/dag/blame")
 def run_blame_propagation(req: BlameRequest):
@@ -380,7 +330,6 @@ def run_blame_propagation(req: BlameRequest):
         "full_blame_chain": repair_queue,
     }
 
-
 @app.get("/api/dag/unlock-status")
 def get_unlock_status(student_id: str = "default"):
     tracker = _get_tracker(student_id)
@@ -408,11 +357,6 @@ def get_unlock_status(student_id: str = "default"):
         })
     return statuses
 
-
-# ─────────────────────────────────────────────────────────────────
-# Mastery Tracking
-# ─────────────────────────────────────────────────────────────────
-
 @app.post("/api/mastery/update")
 def update_mastery(req: MasteryUpdateRequest):
     tracker = _get_tracker(req.student_id)
@@ -423,7 +367,6 @@ def update_mastery(req: MasteryUpdateRequest):
         "state": tracker.get_mastery_state(req.concept_id),
     }
 
-
 @app.get("/api/mastery/{student_id}")
 def get_student_mastery(student_id: str):
     tracker = _get_tracker(student_id)
@@ -433,23 +376,14 @@ def get_student_mastery(student_id: str):
         "summaries": tracker.get_all_summaries(concept_dag),
     }
 
-
 @app.get("/api/mastery/{student_id}/{concept_id}")
 def get_concept_mastery(student_id: str, concept_id: str):
     tracker = _get_tracker(student_id)
     return tracker.get_concept_summary(concept_id, concept_dag)
 
-
-# ─────────────────────────────────────────────────────────────────
-# Feature 4 — Behavior Tree
-# ─────────────────────────────────────────────────────────────────
-
 @app.post("/api/bt/tick")
 def bt_tick(req: BTTickRequest):
-    """
-    Run one tick of the Behavior Tree with the current learner state.
-    Optionally override state values for testing/simulation.
-    """
+
     state_dict = _get_learner_state(req.student_id)
     state_dict.update(req.state_overrides)
 
@@ -461,38 +395,20 @@ def bt_tick(req: BTTickRequest):
         "learner_state": state.to_dict(),
     }
 
-
 @app.get("/api/bt/state/{student_id}")
 def get_bt_state(student_id: str):
-    """Get the current learner state vector for the BT."""
+
     state_dict = _get_learner_state(student_id)
     return state_dict
 
-
 @app.get("/api/bt/structure")
 def get_bt_structure():
-    """Return the BT tree structure for frontend visualization."""
+
     return behavior_tree.get_tree_structure()
-
-
-# ─────────────────────────────────────────────────────────────────
-# Full Session Pipeline
-# ─────────────────────────────────────────────────────────────────
 
 @app.post("/api/session/process")
 def process_session_step(req: SessionProcessRequest):
-    """
-    Full pipeline in one call:
-      1. Error classification
-      2. Fault tree → minimal cut set
-      3. Blame backpropagation
-      4. Mastery update
-      5. IRT θ update
-      6. Calibration update
-      7. Fatigue update
-      8. BT tick → next action
-      9. Explainability record
-    """
+
     questions = load_questions()
     question = next((q for q in questions if q["id"] == req.question_id), None)
     if not question:
@@ -504,18 +420,15 @@ def process_session_step(req: SessionProcessRequest):
     review_queue = _get_review_queue(req.student_id)
     learner_state = _get_learner_state(req.student_id)
 
-    # Save theta before update
     theta_before = irt_tracker.theta
     se_before = irt_tracker.theta_se
 
-    # ── Step 1: Error classification ──
     error_type = classify_error(
         question, req.answer_selected, req.time_taken_ms,
         [err.model_dump() for err in req.error_history]
     )
     is_correct = error_type == "correct"
 
-    # ── Step 2: Fault tree ──
     fault_tree_result = None
     mcs = set()
     misconception_descriptions = []
@@ -543,25 +456,20 @@ def process_session_step(req: SessionProcessRequest):
             for mc in mcs
         ]
 
-    # ── Step 3: Blame backpropagation ──
     blame_result = []
     if mcs:
         mastery = tracker.get_all_mastery()
         blame_result = get_repair_queue(concept_dag, mcs, mastery, max_items=5)
 
-    # ── Step 4: Mastery update ──
     tracker.record_response(concept_id, correct=is_correct)
 
-    # ── Step 5: IRT update ──
     irt_tracker.record_response(
         req.question_id, is_correct, req.confidence,
         {q["id"]: q for q in questions}
     )
 
-    # ── Step 6: Calibration ──
     calibration = irt_tracker.get_state_summary()
 
-    # ── Step 7: Fatigue & learner state update ──
     learner_state["fatigue_score"] = update_fatigue(
         learner_state.get("fatigue_score", 0), is_correct
     )
@@ -590,11 +498,9 @@ def process_session_step(req: SessionProcessRequest):
         learner_state["top_priority_concept"] = blame_result[0]["concept_id"]
         learner_state["top_priority_blame"] = blame_result[0]["blame_weight"]
 
-    # ── Step 8: BT tick ──
     state_obj = LearnerState.from_dict(learner_state)
     bt_action = behavior_tree.tick(state_obj)
 
-    # ── Step 9: Explainability ──
     irt_update = {
         "theta_before": round(theta_before, 3),
         "theta_after": round(irt_tracker.theta, 3),
@@ -619,12 +525,10 @@ def process_session_step(req: SessionProcessRequest):
         current_concept=concept_id,
     )
 
-    # ── SM-2 review queue update ──
     time_bracket = _get_time_bracket(req.time_taken_ms, question)
     grade = compute_grade(is_correct, error_type, time_bracket, req.confidence)
     review_queue.add_or_update(concept_id, grade)
 
-    # Persist to Supabase
     save_session_response(req.student_id, {
         "question_id": req.question_id,
         "answer_selected": req.answer_selected,
@@ -656,9 +560,8 @@ def process_session_step(req: SessionProcessRequest):
         "review_queue": review_queue.to_serializable()[:3],
     }
 
-
 def _get_time_bracket(time_ms: int, question: dict) -> str:
-    """Classify response time as fast/medium/slow."""
+
     avg = question.get("avg_time_incorrect_ms", 30000)
     ratio = time_ms / max(avg, 1)
     if ratio < 0.5:
@@ -666,11 +569,6 @@ def _get_time_bracket(time_ms: int, question: dict) -> str:
     if ratio < 1.5:
         return "medium"
     return "slow"
-
-
-# ─────────────────────────────────────────────────────────────────
-# SM-2 Review Queue
-# ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/sm2/queue/{student_id}")
 def get_review_queue_endpoint(student_id: str):
@@ -683,11 +581,6 @@ def get_review_queue_endpoint(student_id: str):
             for item in rq.get_due_items()
         ],
     }
-
-
-# ─────────────────────────────────────────────────────────────────
-# IRT & Next Question
-# ─────────────────────────────────────────────────────────────────
 
 @app.post("/api/irt/next-question")
 def get_next_question_irt(req: NextQuestionRequest):
@@ -714,31 +607,22 @@ def get_next_question_irt(req: NextQuestionRequest):
         "current_theta": round(irt_tracker.theta, 3)
     }
 
-
 @app.get("/api/irt/student/{student_id}")
 def get_irt_student(student_id: str):
     tracker = _get_irt_tracker(student_id)
     return tracker.get_state_summary()
 
-
-# ─────────────────────────────────────────────────────────────────
-# Auth (Supabase or in-memory fallback)
-# ─────────────────────────────────────────────────────────────────
-
-# In-memory user store for fallback
 _inmemory_users: dict[str, dict] = {}
-
 
 @app.post("/api/auth/register")
 def auth_register(req: AuthRequest):
-    """Register a new student."""
+
     if is_connected():
         result = register_student(req.email, req.password, req.name)
         if result:
             return {"status": "success", "user": result}
         raise HTTPException(status_code=400, detail="Registration failed")
 
-    # In-memory fallback
     if req.email in _inmemory_users:
         raise HTTPException(status_code=400, detail="User already exists")
     user_id = f"user_{len(_inmemory_users) + 1}"
@@ -750,17 +634,15 @@ def auth_register(req: AuthRequest):
     }
     return {"status": "success", "user": {"id": user_id, "email": req.email, "name": req.name}}
 
-
 @app.post("/api/auth/login")
 def auth_login(req: AuthRequest):
-    """Login a student."""
+
     if is_connected():
         result = login_student(req.email, req.password)
         if result:
             return {"status": "success", "user": result}
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # In-memory fallback
     user = _inmemory_users.get(req.email)
     if not user or user["password"] != req.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -768,11 +650,6 @@ def auth_login(req: AuthRequest):
         "status": "success",
         "user": {"id": user["id"], "email": user["email"], "name": user["name"]}
     }
-
-
-# ─────────────────────────────────────────────────────────────────
-# Health & Info
-# ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
 def health():
@@ -791,7 +668,6 @@ def health():
             "explainability": True,
         }
     }
-
 
 if __name__ == "__main__":
     import uvicorn

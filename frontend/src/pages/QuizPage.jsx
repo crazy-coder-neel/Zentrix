@@ -8,7 +8,6 @@ export default function QuizPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
 
-  // Aligning with PRD.md: Algebra, Fault Trees, Explanations, Confidence (Brier Score)
   const quizData = {
     title: "Diagnostic: Quadratic Factorization",
     source: "Algebra 1 - Quadratic Equations",
@@ -48,7 +47,7 @@ export default function QuizPage() {
       setIsSubmitted(false)
       setShowExplanation(false)
     } else {
-      // Finish quiz logic
+
     }
   }
 
@@ -62,7 +61,7 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0e0e0e] text-on-surface">
-      {/* TopAppBar */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -79,7 +78,7 @@ export default function QuizPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-8 py-10 flex-grow w-full flex flex-col">
-        {/* Header Section */}
+        {}
         <div className="mb-8" data-aos="fade-down">
           <div className="flex justify-between items-center mb-4">
              <h1 className="text-3xl font-bold font-headline">{quizData.title}</h1>
@@ -97,7 +96,7 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Question Card */}
+        {}
         <div className="bg-surface-container rounded-3xl p-8 md:p-10 shadow-2xl relative" data-aos="fade-up" data-aos-delay="100">
           <h2 className="text-2xl font-medium leading-relaxed mb-8">{currentQ.question}</h2>
 
@@ -108,7 +107,7 @@ export default function QuizPage() {
               const isWrong = isSubmitted && isSelected && opt.id !== currentQ.correct
 
               let optionClasses = "w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4 "
-              
+
               if (isSubmitted) {
                 if (isCorrect) {
                   optionClasses += "bg-green-500/10 border-green-500/50 text-on-surface"
@@ -145,7 +144,7 @@ export default function QuizPage() {
             })}
           </div>
 
-          {/* Confidence Track Slider (Aligns with PRD Requirement 6.7: Brier Score) */}
+          {}
           {!isSubmitted && (
              <div className="mb-10 bg-surface-container-lowest p-6 rounded-2xl border border-white/5" data-aos="fade-in">
                <div className="flex justify-between items-center mb-4">
@@ -173,7 +172,7 @@ export default function QuizPage() {
              </div>
           )}
 
-          {/* Explanation Box */}
+          {}
           {showExplanation && (
             <div className={`p-6 rounded-2xl mb-8 border transition-all duration-500 ${selectedOption === currentQ.correct ? 'bg-green-500/5 border-green-500/20' : 'bg-surface-container-highest border-error/20'}`} data-aos="fade-in">
               <div className="flex items-start gap-3 mb-2">
@@ -183,7 +182,7 @@ export default function QuizPage() {
                 <span className="font-bold text-sm uppercase tracking-wider mt-0.5 text-on-surface-variant">Fault Tree Trace Output</span>
               </div>
               <p className="text-on-surface leading-relaxed ml-9 mb-4">{currentQ.explanation}</p>
-              
+
               {!isSubmitted || (selectedOption !== currentQ.correct && (
                  <div className="ml-9 p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3">
                    <div className="w-2 h-2 rounded-full bg-error animate-pulse"></div>
@@ -193,7 +192,7 @@ export default function QuizPage() {
             </div>
           )}
 
-          {/* Action Area */}
+          {}
           <div className="flex justify-end pt-4 border-t border-white/5">
             {!isSubmitted ? (
                <button 

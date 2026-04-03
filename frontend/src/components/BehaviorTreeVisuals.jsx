@@ -45,7 +45,6 @@ export default function BehaviorTreeVisuals() {
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
 
-    // Glow effect
     const defs = svg.append("defs")
     const filter = defs.append("filter").attr("id", "glowParticle")
     filter.append("feGaussianBlur").attr("stdDeviation", "4").attr("result", "coloredBlur")
@@ -60,7 +59,6 @@ export default function BehaviorTreeVisuals() {
     const root = d3.hierarchy(data)
     tree(root)
 
-    // Links
     const linkGrp = g.selectAll(".linkGrp")
       .data(root.links())
       .enter().append("g")
@@ -72,7 +70,6 @@ export default function BehaviorTreeVisuals() {
       .attr("stroke", "rgba(255, 143, 111, 0.2)")
       .attr("stroke-width", 2)
 
-    // Animated particles
     const particle = linkGrp.append("circle")
       .attr("r", 4)
       .attr("fill", "#22c55e")
@@ -85,7 +82,6 @@ export default function BehaviorTreeVisuals() {
       .append("mpath")
       .attr("href", (d, i) => `#link-${i}`)
 
-    // Nodes
     const nodeWidth = 155
     const nodeHeight = 44
 
@@ -94,7 +90,6 @@ export default function BehaviorTreeVisuals() {
       .enter().append("g")
       .attr("transform", d => `translate(${d.x},${d.y})`)
 
-    // Card background
     node.append("rect")
       .attr("width", nodeWidth)
       .attr("height", nodeHeight)
@@ -110,7 +105,6 @@ export default function BehaviorTreeVisuals() {
       .attr("stroke-width", 1.5)
       .attr("filter", "drop-shadow(0 8px 16px rgba(0,0,0,0.4))")
 
-    // Text
     node.append("text")
       .attr("dy", 5)
       .attr("text-anchor", "middle")

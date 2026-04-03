@@ -1,8 +1,4 @@
-"""
-IntelliRev Engine — Core adaptive learning service.
-Handles weakness tracking, confidence scoring, revision scheduling,
-and gamification. Pure rule-based logic. No LLMs.
-"""
+
 import logging
 from datetime import datetime, timedelta
 
@@ -15,7 +11,6 @@ from ..utils.scoring import (
 
 logger = logging.getLogger(__name__)
 
-
 def process_quiz_result(
     user_id: str,
     topic_id: str,
@@ -24,17 +19,9 @@ def process_quiz_result(
     feedback: list[dict],
     db,
 ) -> dict:
-    """
-    Core IntelliRev processing after quiz submission:
-    1. Update weakness score
-    2. Compute new confidence score
-    3. Classify topic (strong/medium/weak)
-    4. Schedule next revision
-    5. Update gamification score
-    """
+
     percentage = (correct / total * 100) if total > 0 else 0
 
-    # --- Get existing weakness record ---
     current_confidence = 50.0
     current_weakness = 0
 
@@ -54,23 +41,17 @@ def process_quiz_result(
     except Exception as e:
         logger.warning(f"Could not fetch weakness record: {e}")
 
-    # --- Update confidence score ---
     new_confidence = compute_quiz_confidence(correct, total, current_confidence)
 
-    # --- Update weakness score ---
-    #  wrong answers → increment weakness
     wrong = total - correct
     new_weakness = max(0, current_weakness + wrong * 2 - correct)
 
-    # --- Classify ---
     classification = classify_topic(new_confidence)
 
-    # --- Schedule revision ---
     revision_date = next_revision_date(classification)
 
-    # --- Write to DB ---
     try:
-        # Upsert weak_topics
+
         db.table("weak_topics").upsert(
             {
                 "user_id": user_id,
@@ -85,7 +66,7 @@ def process_quiz_result(
         logger.warning(f"Failed to upsert weak_topics: {e}")
 
     try:
-        # Upsert revision_schedule
+
         db.table("revision_schedule").upsert(
             {
                 "user_id": user_id,
@@ -98,7 +79,6 @@ def process_quiz_result(
     except Exception as e:
         logger.warning(f"Failed to upsert revision_schedule: {e}")
 
-    # --- Gamification ---
     points = calculate_points(percentage)
     try:
         existing_score = (
@@ -111,7 +91,7 @@ def process_quiz_result(
         if existing_score.data:
             rec = existing_score.data[0]
             new_total = rec["total_score"] + points
-            # Simple streak: increment if active today
+
             streak = rec.get("streak", 0) + 1
             db.table("scores").update(
                 {"total_score": new_total, "streak": streak, "last_active": datetime.utcnow().isoformat()}
@@ -135,10 +115,8 @@ def process_quiz_result(
         "points_earned": points,
     }
 
-
 def get_profile(user_id: str, db) -> dict:
-    """Fetch full user profile: score, streak, weak topics, revision schedule."""
-    # Score
+
     total_score = 0
     streak = 0
     try:
@@ -155,7 +133,6 @@ def get_profile(user_id: str, db) -> dict:
     except Exception:
         pass
 
-    # Weak topics
     weak_topics = []
     try:
         wt_res = (
@@ -167,7 +144,7 @@ def get_profile(user_id: str, db) -> dict:
             .execute()
         )
         for wt in (wt_res.data or []):
-            # Get topic name
+
             topic_name = wt["topic_id"]
             try:
                 t = db.table("topics").select("name").eq("id", wt["topic_id"]).limit(1).execute()
@@ -185,7 +162,6 @@ def get_profile(user_id: str, db) -> dict:
     except Exception:
         pass
 
-    # Revision schedule
     revision_schedule = []
     try:
         rev_res = (
@@ -199,7 +175,6 @@ def get_profile(user_id: str, db) -> dict:
     except Exception:
         pass
 
-    # Activity (attempts per day)
     activity = []
     try:
         from collections import Counter

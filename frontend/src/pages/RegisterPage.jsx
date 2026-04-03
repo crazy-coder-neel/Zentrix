@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -8,23 +9,47 @@ const RegisterPage = () => {
     email: '',
     password: '',
   });
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, registration logic would go here.
-    // For now, redirect to dashboard.
-    navigate('/');
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (data.user) {
+        navigate('/');
+      }
+    } catch (err) {
+      setError(err.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-on-background)] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background glow effects for premium feel */}
+      {}
       <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-[var(--color-primary-dim)] rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-[var(--color-secondary-dim)] rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none"></div>
 
@@ -35,13 +60,13 @@ const RegisterPage = () => {
         className="w-full max-w-md relative z-10"
       >
         <div className="bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden">
-          
-          {/* Subtle top highlight for glass feel */}
+
+          {}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-secondary)] to-[var(--color-primary-dim)] opacity-40"></div>
 
           <div className="text-center mb-8 mt-2">
             <h1 className="font-headline text-3xl md:text-4xl font-bold mb-3 tracking-tight text-[var(--color-on-surface)]">
-              Zentrix
+              Episteme
             </h1>
             <p className="text-[var(--color-on-surface-variant)] text-sm md:text-base font-medium">
               Join the new era of learning
@@ -53,6 +78,13 @@ const RegisterPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-error/10 border border-error/20 text-error text-xs p-3 rounded-xl flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {error}
+              </div>
+            )}
+
             <div className="space-y-1">
               <label className="text-[13px] font-semibold text-[var(--color-on-surface-variant)] ml-1 uppercase tracking-wider">Full Name</label>
               <div className="relative group">
@@ -105,10 +137,20 @@ const RegisterPage = () => {
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
               type="submit"
-              className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold rounded-xl py-3.5 mt-4 shadow-[0_0_15px_rgba(255,143,111,0.15)] hover:shadow-[0_0_25px_rgba(255,143,111,0.3)] transition-all duration-300 flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-bold rounded-xl py-3.5 mt-4 shadow-[0_0_15px_rgba(255,143,111,0.15)] hover:shadow-[0_0_25px_rgba(255,143,111,0.3)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
-              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              {loading ? (
+                <svg className="animate-spin h-5 w-5 mr-3 text-[var(--color-on-primary)]" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+              ) : (
+                <>
+                  Create Account
+                  <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                </>
+              )}
             </motion.button>
           </form>
 
@@ -118,10 +160,10 @@ const RegisterPage = () => {
               Sign in
             </Link>
           </div>
-          
+
         </div>
-        
-        {/* Helper footer */}
+
+        {}
         <div className="mt-6 flex justify-center items-center gap-4 text-xs text-[var(--color-outline)] font-medium">
             <span className="hover:text-[var(--color-on-surface-variant)] transition-colors cursor-pointer">Privacy Policy</span>
             <span className="w-1 h-1 rounded-full bg-[var(--color-outline-variant)]"></span>

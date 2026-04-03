@@ -4,7 +4,6 @@ import * as d3 from 'd3';
 
 const API = 'http://localhost:8000';
 
-// ─── Color palette for mastery states ───
 const STATE_COLORS = {
   strong:     { fill: '#22c55e', stroke: '#16a34a', bg: 'rgba(34,197,94,0.12)', label: 'Strong' },
   developing: { fill: '#fdd34d', stroke: '#eab308', bg: 'rgba(253,211,77,0.12)', label: 'Developing' },
@@ -31,7 +30,6 @@ export default function KnowledgeDAGPage() {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
 
-  // Fetch DAG data
   const fetchDAG = useCallback(() => {
     setLoading(true);
     fetch(`${API}/api/dag?student_id=default`)
@@ -46,7 +44,6 @@ export default function KnowledgeDAGPage() {
       });
   }, []);
 
-  // Fetch unlock status
   const fetchUnlockStatus = useCallback(() => {
     fetch(`${API}/api/dag/unlock-status?student_id=default`)
       .then(r => r.json())
@@ -59,7 +56,6 @@ export default function KnowledgeDAGPage() {
     fetchUnlockStatus();
   }, [fetchDAG, fetchUnlockStatus]);
 
-  // Run blame propagation
   const runBlame = useCallback(() => {
     if (!blameInput.trim()) return;
     setBlameLoading(true);
@@ -84,7 +80,6 @@ export default function KnowledgeDAGPage() {
       });
   }, [blameInput]);
 
-  // Fetch concept details on click
   const fetchConceptDetail = useCallback((conceptId) => {
     fetch(`${API}/api/dag/concept/${conceptId}?student_id=default`)
       .then(r => r.json())
@@ -92,7 +87,6 @@ export default function KnowledgeDAGPage() {
       .catch(err => console.error('Failed to fetch concept:', err));
   }, []);
 
-  // ─── D3 Visualization ───
   useEffect(() => {
     if (!dagData || !svgRef.current) return;
 
@@ -104,10 +98,8 @@ export default function KnowledgeDAGPage() {
     svg.selectAll('*').remove();
     svg.attr('viewBox', `0 0 ${width} ${height}`);
 
-    // Defs for gradients and arrows
     const defs = svg.append('defs');
 
-    // Arrow marker
     defs.append('marker')
       .attr('id', 'arrowhead')
       .attr('viewBox', '0 -5 10 10')
@@ -120,7 +112,6 @@ export default function KnowledgeDAGPage() {
       .attr('d', 'M0,-4L8,0L0,4')
       .attr('fill', 'rgba(255, 143, 111, 0.5)');
 
-    // Glow filter
     const filter = defs.append('filter').attr('id', 'glow');
     filter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
     filter.append('feMerge').call(m => {
@@ -130,13 +121,11 @@ export default function KnowledgeDAGPage() {
 
     const g = svg.append('g');
 
-    // Zoom
     const zoom = d3.zoom()
       .scaleExtent([0.3, 3])
       .on('zoom', (event) => g.attr('transform', event.transform));
     svg.call(zoom);
 
-    // Build blame lookup for highlighting
     const blameLookup = {};
     if (blameResult?.full_blame_chain) {
       blameResult.full_blame_chain.forEach(b => {
@@ -144,7 +133,6 @@ export default function KnowledgeDAGPage() {
       });
     }
 
-    // Prepare nodes with tier-based Y positioning
     const tierGroups = {};
     dagData.nodes.forEach(n => {
       if (!tierGroups[n.tier]) tierGroups[n.tier] = [];
@@ -178,7 +166,6 @@ export default function KnowledgeDAGPage() {
       target: nodeById[e.to],
     })).filter(l => l.source && l.target);
 
-    // Simulation
     const simulation = d3.forceSimulation(nodes)
       .force('link', d3.forceLink(links).id(d => d.id).distance(100).strength(0.3))
       .force('charge', d3.forceManyBody().strength(-300))
@@ -191,7 +178,6 @@ export default function KnowledgeDAGPage() {
 
     simulationRef.current = simulation;
 
-    // Tier background bands
     tiers.forEach((tier, idx) => {
       const y = tierSpacing * (idx + 1) - tierSpacing / 2;
       g.append('rect')
@@ -209,7 +195,6 @@ export default function KnowledgeDAGPage() {
         .attr('font-family', 'Plus Jakarta Sans, sans-serif');
     });
 
-    // Links
     const link = g.append('g')
       .selectAll('line')
       .data(links)
@@ -228,7 +213,6 @@ export default function KnowledgeDAGPage() {
       })
       .attr('marker-end', 'url(#arrowhead)');
 
-    // Node groups
     const node = g.append('g')
       .selectAll('g')
       .data(nodes)
@@ -254,7 +238,6 @@ export default function KnowledgeDAGPage() {
           event.subject.fy = null;
         }));
 
-    // Blame glow ring
     node.filter(d => d.isBlamed)
       .append('circle')
       .attr('r', 30)
@@ -264,7 +247,6 @@ export default function KnowledgeDAGPage() {
       .attr('opacity', d => Math.max(0.3, d.blameWeight))
       .attr('filter', 'url(#glow)');
 
-    // Main circle
     node.append('circle')
       .attr('r', 22)
       .attr('fill', '#1a1a1a')
@@ -274,7 +256,6 @@ export default function KnowledgeDAGPage() {
       })
       .attr('stroke-width', d => d.isBlamed ? 3.5 : 2.5);
 
-    // Mastery percentage
     node.append('text')
       .attr('dy', 1)
       .attr('text-anchor', 'middle')
@@ -286,7 +267,6 @@ export default function KnowledgeDAGPage() {
       .attr('font-family', 'Inter, sans-serif')
       .style('pointer-events', 'none');
 
-    // Concept ID label
     node.append('text')
       .attr('dy', 36)
       .attr('text-anchor', 'middle')
@@ -297,7 +277,6 @@ export default function KnowledgeDAGPage() {
       .attr('font-family', 'Inter, sans-serif')
       .style('pointer-events', 'none');
 
-    // Concept name label
     node.append('text')
       .attr('dy', 48)
       .attr('text-anchor', 'middle')
@@ -308,7 +287,6 @@ export default function KnowledgeDAGPage() {
       .attr('font-family', 'Inter, sans-serif')
       .style('pointer-events', 'none');
 
-    // Tick
     simulation.on('tick', () => {
       link
         .attr('x1', d => d.source.x)
@@ -326,7 +304,6 @@ export default function KnowledgeDAGPage() {
     return () => simulation.stop();
   }, [dagData, blameResult, fetchConceptDetail]);
 
-  // ─── Quick-blame preset buttons ───
   const BLAME_PRESETS = [
     { label: 'M11 — Sign error on variable move', value: 'M11' },
     { label: 'M20 — Substitution into same equation', value: 'M20' },
@@ -349,7 +326,7 @@ export default function KnowledgeDAGPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Nav */}
+      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
@@ -369,7 +346,7 @@ export default function KnowledgeDAGPage() {
       </nav>
 
       <main className="max-w-screen-2xl mx-auto px-8 py-8 flex-grow w-full">
-        {/* Header */}
+        {}
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">
@@ -390,7 +367,7 @@ export default function KnowledgeDAGPage() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* ─── DAG Visualization ─── */}
+          {}
           <section className="lg:col-span-8 bg-surface-container rounded-3xl overflow-hidden relative">
             <div className="p-6 pb-0 flex justify-between items-center">
               <div>
@@ -405,7 +382,7 @@ export default function KnowledgeDAGPage() {
               <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
             </div>
 
-            {/* Stats bar */}
+            {}
             <div className="p-6 pt-2 grid grid-cols-4 gap-3">
               {[
                 { label: 'Total Concepts', value: dagData?.nodes?.length || 0 },
@@ -421,10 +398,10 @@ export default function KnowledgeDAGPage() {
             </div>
           </section>
 
-          {/* ─── Right Panel ─── */}
+          {}
           <div className="lg:col-span-4 space-y-6">
 
-            {/* ─── Blame Propagation Control ─── */}
+            {}
             <section className="bg-surface-container rounded-3xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>neurology</span>
@@ -451,7 +428,7 @@ export default function KnowledgeDAGPage() {
                 </button>
               </div>
 
-              {/* Quick presets */}
+              {}
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {BLAME_PRESETS.map(p => (
                   <button
@@ -464,7 +441,7 @@ export default function KnowledgeDAGPage() {
                 ))}
               </div>
 
-              {/* Blame Results */}
+              {}
               {blameResult && (
                 <div className="space-y-2 mt-4">
                   <div className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">
@@ -508,7 +485,7 @@ export default function KnowledgeDAGPage() {
               )}
             </section>
 
-            {/* ─── Concept Detail Panel ─── */}
+            {}
             {selectedNode && (
               <section className="bg-surface-container rounded-3xl p-6 animate-[fadeIn_0.3s_ease]">
                 <div className="flex items-center justify-between mb-4">
@@ -554,7 +531,7 @@ export default function KnowledgeDAGPage() {
                     </div>
                   </div>
 
-                  {/* Prerequisites */}
+                  {}
                   {selectedNode.prerequisites?.length > 0 && (
                     <div>
                       <div className="text-xs text-on-surface-variant mb-2">Direct Prerequisites</div>
@@ -569,7 +546,7 @@ export default function KnowledgeDAGPage() {
                     </div>
                   )}
 
-                  {/* Dependents */}
+                  {}
                   {selectedNode.dependents?.length > 0 && (
                     <div>
                       <div className="text-xs text-on-surface-variant mb-2">Direct Dependents</div>
@@ -584,7 +561,7 @@ export default function KnowledgeDAGPage() {
                     </div>
                   )}
 
-                  {/* Bloom Level */}
+                  {}
                   <div>
                     <div className="text-xs text-on-surface-variant mb-1">Bloom's Level</div>
                     <div className="h-2 bg-surface-container-low rounded-full overflow-hidden">
@@ -599,7 +576,7 @@ export default function KnowledgeDAGPage() {
               </section>
             )}
 
-            {/* ─── Study Order ─── */}
+            {}
             <section className="bg-surface-container rounded-3xl p-6">
               <div className="flex items-center gap-2 mb-4">
                 <span className="material-symbols-outlined text-tertiary-dim" style={{ fontVariationSettings: "'FILL' 1" }}>route</span>
