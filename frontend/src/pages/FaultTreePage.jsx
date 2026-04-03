@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import FaultTreeStudentView from '../components/FaultTreeStudentView';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function FaultTreePage() {
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/questions')
+    fetch(`${API}/api/questions`)
       .then(res => res.json())
       .then(data => {
         setQuestions(data);
@@ -21,7 +23,7 @@ export default function FaultTreePage() {
   const fetchAdaptiveQuestion = async () => {
 
     try {
-        const response = await fetch('http://localhost:8000/api/irt/next-question', {
+        const response = await fetch(`${API}/api/irt/next-question`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ student_id: 'default' })

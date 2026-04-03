@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [confidence, setConfidence] = useState(50);
@@ -23,7 +25,7 @@ export default function FaultTreeStudentView({ question, onAdaptiveNext }) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:8000/api/evaluate', {
+      const response = await fetch(`${API}/api/evaluate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

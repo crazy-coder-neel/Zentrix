@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import * as d3 from 'd3';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API = 'http://localhost:8000';
+import { API } from '../api';
 
 export default function BehaviorTreePage() {
   const [treeStructure, setTreeStructure] = useState(null);

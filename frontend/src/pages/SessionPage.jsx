@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API = 'http://localhost:8000';
+import { API } from '../api';
 
 export default function SessionPage() {
   const [question, setQuestion] = useState(null);

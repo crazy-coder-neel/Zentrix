@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import * as d3 from 'd3';
 
-const API = 'http://localhost:8000';
+import { API } from '../api';
 
 const STATE_COLORS = {
   strong:     { fill: '#22c55e', stroke: '#16a34a', bg: 'rgba(34,197,94,0.12)', label: 'Strong' },

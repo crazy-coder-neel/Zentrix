@@ -50,23 +50,29 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:5174",
 ]
 if frontend_url:
-    origins.append(frontend_url)
-    origins.append(frontend_url + "/")
+    if frontend_url not in origins:
+        origins.append(frontend_url)
+    if not frontend_url.endswith("/"):
+        origins.append(frontend_url + "/")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if frontend_url else ["*"],
+    allow_origins=[o for o in origins if o],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import * as d3 from 'd3'
 
-const API = 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const STATE_COLORS = {
   strong:     '#22c55e',

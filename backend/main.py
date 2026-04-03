@@ -23,13 +23,26 @@ from db.supabase_client import (
 
 app = FastAPI(title="Zentrix — Episteme Engine", version="2.0")
 
+
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:5174",
+    "http://localhost:8000",
+    FRONTEND_URL,
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o for o in origins if o],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
 
