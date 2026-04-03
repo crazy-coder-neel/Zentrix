@@ -357,6 +357,8 @@ export default function KnowledgeDAGPage() {
             <Link to="/dashboard" className="text-stone-400 hover:text-stone-100 transition-colors">Dashboard</Link>
             <Link to="/fault-tree-demo" className="text-stone-400 hover:text-stone-100 transition-colors">Fault Tree</Link>
             <span className="text-primary font-bold border-b-2 border-primary pb-1">Knowledge DAG</span>
+            <Link to="/behavior-tree" className="text-stone-400 hover:text-stone-100 transition-colors">Behavior Tree</Link>
+            <Link to="/session" className="text-stone-400 hover:text-stone-100 transition-colors">Live Session</Link>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">

@@ -47,6 +47,8 @@ export default function FaultTreePage() {
             <Link to="/dashboard" className="text-stone-400 hover:text-stone-100 transition-colors">Dashboard</Link>
             <span className="text-primary font-bold border-b-2 border-primary pb-1">Fault Tree Engine</span>
             <Link to="/knowledge-dag" className="text-stone-400 hover:text-stone-100 transition-colors">Knowledge DAG</Link>
+            <Link to="/behavior-tree" className="text-stone-400 hover:text-stone-100 transition-colors">Behavior Tree</Link>
+            <Link to="/session" className="text-stone-400 hover:text-stone-100 transition-colors">Live Session</Link>
           </div>
           <div className="flex items-center gap-4">
              <div className="hidden md:flex items-center bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant/10">

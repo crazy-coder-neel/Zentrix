@@ -42,11 +42,11 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
           <div className="hidden md:flex gap-8 items-center font-headline text-sm font-medium tracking-wide">
-            <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#dag">Knowledge DAG</a>
-            <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#behavior-tree">Behavior Tree</a>
-            <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#session">Live Session</a>
+            <span className="text-primary font-bold border-b-2 border-primary pb-1">Dashboard</span>
             <Link to="/fault-tree-demo" className="text-stone-400 hover:text-stone-100 transition-colors">Fault Tree</Link>
-            <Link to="/knowledge-dag" className="text-stone-400 hover:text-stone-100 transition-colors">Full DAG</Link>
+            <Link to="/knowledge-dag" className="text-stone-400 hover:text-stone-100 transition-colors">Knowledge DAG</Link>
+            <Link to="/behavior-tree" className="text-stone-400 hover:text-stone-100 transition-colors">Behavior Tree</Link>
+            <Link to="/session" className="text-stone-400 hover:text-stone-100 transition-colors">Live Session</Link>
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant/10">

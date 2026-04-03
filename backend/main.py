@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,6 +11,16 @@ from dag_engine.blame import backpropagate_blame, get_top_repair_target, get_rep
 from dag_engine.mastery import MasteryTracker
 from irt_engine.tracker import IRTTracker
 from irt_engine.irt import select_next_question
+from behavior_tree_engine.behavior_tree import BehaviorTree, LearnerState, BTAction, update_fatigue
+from behavior_tree_engine.sm2 import ReviewQueue, compute_grade
+from behavior_tree_engine.explainability import ExplainabilityEngine
+from db.supabase_client import (
+    get_supabase_client, is_connected,
+    save_student, load_student,
+    save_session_response, save_mastery_snapshot,
+    register_student, login_student,
+)
+
 app = FastAPI(title="Zentrix — Episteme Engine", version="2.0")
 
 app.add_middleware(
@@ -23,28 +34,56 @@ app.add_middleware(
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
 
 # ─────────────────────────────────────────────────────────────────
-# Initialise DAG once at startup (reads from data/ JSON files)
+# Initialise engines at startup
 # ─────────────────────────────────────────────────────────────────
 concept_dag = ConceptDAG()
+behavior_tree = BehaviorTree()
+explainability = ExplainabilityEngine()
 
-# In-memory per-session mastery trackers (keyed by student_id)
-# In production this would be backed by a database
+# In-memory per-session trackers (keyed by student_id)
 _student_trackers: dict[str, MasteryTracker] = {}
 _irt_trackers: dict[str, IRTTracker] = {}
+_review_queues: dict[str, ReviewQueue] = {}
+_learner_states: dict[str, dict] = {}  # raw state dicts for BT
 
 
 def _get_tracker(student_id: str) -> MasteryTracker:
-    """Get or create a MasteryTracker for a student."""
     if student_id not in _student_trackers:
         _student_trackers[student_id] = MasteryTracker()
     return _student_trackers[student_id]
 
 
 def _get_irt_tracker(student_id: str) -> IRTTracker:
-    """Get or create an IRTTracker for a student."""
     if student_id not in _irt_trackers:
         _irt_trackers[student_id] = IRTTracker()
     return _irt_trackers[student_id]
+
+
+def _get_review_queue(student_id: str) -> ReviewQueue:
+    if student_id not in _review_queues:
+        _review_queues[student_id] = ReviewQueue()
+    return _review_queues[student_id]
+
+
+def _get_learner_state(student_id: str) -> dict:
+    if student_id not in _learner_states:
+        _learner_states[student_id] = {
+            "calibration_state": "well_calibrated",
+            "top_priority_concept": None,
+            "top_priority_blame": 0.0,
+            "current_concept_id": "",
+            "current_concept_mastery": 0.0,
+            "consecutive_correct_streak": 0,
+            "consecutive_wrong_streak": 0,
+            "fatigue_score": 0.0,
+            "items_in_session": 0,
+            "theta": 0.0,
+            "theta_se": 4.0,
+            "slip_count_session": 0,
+            "active_misconception_id": None,
+            "session_minutes_elapsed": 0.0,
+        }
+    return _learner_states[student_id]
 
 
 def load_questions():
@@ -87,13 +126,38 @@ class MasteryUpdateRequest(BaseModel):
     correct: bool
 
 
+class BTTickRequest(BaseModel):
+    student_id: str = "default"
+    state_overrides: Dict = {}
+
+
+class SessionProcessRequest(BaseModel):
+    """Full pipeline request: answer + evaluate + BT tick."""
+    student_id: str = "default"
+    question_id: str
+    answer_selected: str
+    time_taken_ms: int
+    confidence: float = 50.0
+    error_history: List[ErrorHistoryItem] = []
+    prior_error_patterns: List[str] = []
+
+
+class AuthRequest(BaseModel):
+    email: str
+    password: str
+    name: str = ""
+
+
+class NextQuestionRequest(BaseModel):
+    student_id: str = "default"
+
+
 # ─────────────────────────────────────────────────────────────────
 # Feature 1 — Questions & Fault Tree
 # ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/questions")
 def get_all_questions():
-    """Return all questions, stripping internal fields for the frontend."""
     questions = load_questions()
     results = []
     for q in questions:
@@ -138,6 +202,7 @@ def evaluate_answer(req: EvaluateRequest):
       3. Map misconceptions → concepts via DAG
       4. Run blame backpropagation → repair queue
       5. Update mastery tracking
+      6. Update IRT
     """
     questions = load_questions()
     question = next((q for q in questions if q["id"] == req.question_id), None)
@@ -159,13 +224,13 @@ def evaluate_answer(req: EvaluateRequest):
     # Update mastery tracker
     tracker = _get_tracker(req.student_id)
     tracker.record_response(concept_id, correct=is_correct)
-    
+
     # Update IRT tracker
     irt_tracker = _get_irt_tracker(req.student_id)
     irt_tracker.record_response(
-        req.question_id, 
-        is_correct, 
-        req.confidence, 
+        req.question_id,
+        is_correct,
+        req.confidence,
         {q["id"]: q for q in questions}
     )
 
@@ -219,6 +284,17 @@ def evaluate_answer(req: EvaluateRequest):
             if repair_queue:
                 result["top_repair_target"] = repair_queue[0]
 
+    # Save to Supabase if connected
+    save_session_response(req.student_id, {
+        "question_id": req.question_id,
+        "answer_selected": req.answer_selected,
+        "is_correct": is_correct,
+        "error_type": error_type,
+        "time_taken_ms": req.time_taken_ms,
+        "confidence": req.confidence,
+        "concept_id": concept_id,
+    })
+
     return result
 
 
@@ -228,10 +304,6 @@ def evaluate_answer(req: EvaluateRequest):
 
 @app.get("/api/dag")
 def get_dag(student_id: Optional[str] = None):
-    """
-    Return the full concept DAG for frontend visualization.
-    If student_id is provided, includes mastery scores and concept states.
-    """
     mastery = None
     if student_id:
         tracker = _get_tracker(student_id)
@@ -241,7 +313,6 @@ def get_dag(student_id: Optional[str] = None):
 
 @app.get("/api/dag/concept/{concept_id}")
 def get_concept(concept_id: str, student_id: Optional[str] = None):
-    """Return details for a single concept, including prerequisites and dependents."""
     if concept_id not in concept_dag.nodes:
         raise HTTPException(status_code=404, detail=f"Concept {concept_id} not found")
 
@@ -269,7 +340,6 @@ def get_concept(concept_id: str, student_id: Optional[str] = None):
 
 @app.get("/api/dag/topological-order")
 def get_topological_order():
-    """Return concepts in a valid study order."""
     order = concept_dag.topological_order()
     return [
         {
@@ -283,16 +353,10 @@ def get_topological_order():
 
 @app.post("/api/dag/blame")
 def run_blame_propagation(req: BlameRequest):
-    """
-    Run blame backpropagation from a set of misconception IDs.
-    Uses student's tracked mastery if student_id is provided,
-    otherwise uses the mastery dict in the request body.
-    """
     mastery = req.mastery
     if req.student_id:
         tracker = _get_tracker(req.student_id)
         mastery = tracker.get_all_mastery()
-        # Merge: request mastery overrides tracked mastery
         if req.mastery:
             mastery.update(req.mastery)
 
@@ -319,7 +383,6 @@ def run_blame_propagation(req: BlameRequest):
 
 @app.get("/api/dag/unlock-status")
 def get_unlock_status(student_id: str = "default"):
-    """Return the unlock status of every concept for a student."""
     tracker = _get_tracker(student_id)
     mastery = tracker.get_all_mastery()
 
@@ -352,7 +415,6 @@ def get_unlock_status(student_id: str = "default"):
 
 @app.post("/api/mastery/update")
 def update_mastery(req: MasteryUpdateRequest):
-    """Manually record a response and update mastery for a concept."""
     tracker = _get_tracker(req.student_id)
     new_mastery = tracker.record_response(req.concept_id, req.correct)
     return {
@@ -364,7 +426,6 @@ def update_mastery(req: MasteryUpdateRequest):
 
 @app.get("/api/mastery/{student_id}")
 def get_student_mastery(student_id: str):
-    """Return full mastery profile for a student."""
     tracker = _get_tracker(student_id)
     return {
         "student_id": student_id,
@@ -375,17 +436,258 @@ def get_student_mastery(student_id: str):
 
 @app.get("/api/mastery/{student_id}/{concept_id}")
 def get_concept_mastery(student_id: str, concept_id: str):
-    """Return mastery details for a specific concept."""
     tracker = _get_tracker(student_id)
     return tracker.get_concept_summary(concept_id, concept_dag)
 
 
 # ─────────────────────────────────────────────────────────────────
-# Health & Info & IRT Next
+# Feature 4 — Behavior Tree
 # ─────────────────────────────────────────────────────────────────
 
-class NextQuestionRequest(BaseModel):
-    student_id: str = "default"
+@app.post("/api/bt/tick")
+def bt_tick(req: BTTickRequest):
+    """
+    Run one tick of the Behavior Tree with the current learner state.
+    Optionally override state values for testing/simulation.
+    """
+    state_dict = _get_learner_state(req.student_id)
+    state_dict.update(req.state_overrides)
+
+    state = LearnerState.from_dict(state_dict)
+    action = behavior_tree.tick(state)
+
+    return {
+        "action": action.to_dict(),
+        "learner_state": state.to_dict(),
+    }
+
+
+@app.get("/api/bt/state/{student_id}")
+def get_bt_state(student_id: str):
+    """Get the current learner state vector for the BT."""
+    state_dict = _get_learner_state(student_id)
+    return state_dict
+
+
+@app.get("/api/bt/structure")
+def get_bt_structure():
+    """Return the BT tree structure for frontend visualization."""
+    return behavior_tree.get_tree_structure()
+
+
+# ─────────────────────────────────────────────────────────────────
+# Full Session Pipeline
+# ─────────────────────────────────────────────────────────────────
+
+@app.post("/api/session/process")
+def process_session_step(req: SessionProcessRequest):
+    """
+    Full pipeline in one call:
+      1. Error classification
+      2. Fault tree → minimal cut set
+      3. Blame backpropagation
+      4. Mastery update
+      5. IRT θ update
+      6. Calibration update
+      7. Fatigue update
+      8. BT tick → next action
+      9. Explainability record
+    """
+    questions = load_questions()
+    question = next((q for q in questions if q["id"] == req.question_id), None)
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    concept_id = question["concept_id"]
+    tracker = _get_tracker(req.student_id)
+    irt_tracker = _get_irt_tracker(req.student_id)
+    review_queue = _get_review_queue(req.student_id)
+    learner_state = _get_learner_state(req.student_id)
+
+    # Save theta before update
+    theta_before = irt_tracker.theta
+    se_before = irt_tracker.theta_se
+
+    # ── Step 1: Error classification ──
+    error_type = classify_error(
+        question, req.answer_selected, req.time_taken_ms,
+        [err.model_dump() for err in req.error_history]
+    )
+    is_correct = error_type == "correct"
+
+    # ── Step 2: Fault tree ──
+    fault_tree_result = None
+    mcs = set()
+    misconception_descriptions = []
+
+    if not is_correct and error_type != "slip":
+        fault_tree = get_fault_tree(question)
+        answer_event = {
+            "answer_selected": req.answer_selected,
+            "time_bracket": _get_time_bracket(req.time_taken_ms, question),
+            "prior_error_patterns": req.prior_error_patterns,
+        }
+        matched, mcs = evaluate_fault_tree(fault_tree, answer_event)
+        fault_tree_result = {
+            "matched": matched,
+            "minimal_cut_set": list(mcs),
+        }
+        misconception_descriptions = [
+            {
+                "id": mc,
+                "description": concept_dag.misconceptions.get(mc, {}).get(
+                    "description", "Unknown misconception"
+                ),
+                "concept_id": concept_dag.mc_to_concept.get(mc, "unknown"),
+            }
+            for mc in mcs
+        ]
+
+    # ── Step 3: Blame backpropagation ──
+    blame_result = []
+    if mcs:
+        mastery = tracker.get_all_mastery()
+        blame_result = get_repair_queue(concept_dag, mcs, mastery, max_items=5)
+
+    # ── Step 4: Mastery update ──
+    tracker.record_response(concept_id, correct=is_correct)
+
+    # ── Step 5: IRT update ──
+    irt_tracker.record_response(
+        req.question_id, is_correct, req.confidence,
+        {q["id"]: q for q in questions}
+    )
+
+    # ── Step 6: Calibration ──
+    calibration = irt_tracker.get_state_summary()
+
+    # ── Step 7: Fatigue & learner state update ──
+    learner_state["fatigue_score"] = update_fatigue(
+        learner_state.get("fatigue_score", 0), is_correct
+    )
+    learner_state["items_in_session"] = learner_state.get("items_in_session", 0) + 1
+    learner_state["current_concept_id"] = concept_id
+    learner_state["current_concept_mastery"] = tracker.get_mastery(concept_id)
+    learner_state["theta"] = irt_tracker.theta
+    learner_state["theta_se"] = irt_tracker.theta_se
+    learner_state["calibration_state"] = calibration["calibration_state"]
+
+    if is_correct:
+        learner_state["consecutive_correct_streak"] = learner_state.get("consecutive_correct_streak", 0) + 1
+        learner_state["consecutive_wrong_streak"] = 0
+    else:
+        learner_state["consecutive_wrong_streak"] = learner_state.get("consecutive_wrong_streak", 0) + 1
+        learner_state["consecutive_correct_streak"] = 0
+        if error_type == "slip":
+            learner_state["slip_count_session"] = learner_state.get("slip_count_session", 0) + 1
+
+    if mcs:
+        learner_state["active_misconception_id"] = list(mcs)[0]
+    elif is_correct:
+        learner_state["active_misconception_id"] = None
+
+    if blame_result:
+        learner_state["top_priority_concept"] = blame_result[0]["concept_id"]
+        learner_state["top_priority_blame"] = blame_result[0]["blame_weight"]
+
+    # ── Step 8: BT tick ──
+    state_obj = LearnerState.from_dict(learner_state)
+    bt_action = behavior_tree.tick(state_obj)
+
+    # ── Step 9: Explainability ──
+    irt_update = {
+        "theta_before": round(theta_before, 3),
+        "theta_after": round(irt_tracker.theta, 3),
+        "se_before": round(se_before, 3),
+        "se_after": round(irt_tracker.theta_se, 3),
+    }
+
+    explanation = explainability.assemble_record(
+        question_id=req.question_id,
+        answer_selected=req.answer_selected,
+        correct_answer=question["correct_answer"],
+        is_correct=is_correct,
+        error_type=error_type,
+        confidence=req.confidence,
+        time_taken_ms=req.time_taken_ms,
+        fault_tree_result=fault_tree_result,
+        blame_result=blame_result,
+        irt_update=irt_update,
+        calibration=calibration,
+        bt_action=bt_action.to_dict(),
+        misconception_descriptions=misconception_descriptions,
+        current_concept=concept_id,
+    )
+
+    # ── SM-2 review queue update ──
+    time_bracket = _get_time_bracket(req.time_taken_ms, question)
+    grade = compute_grade(is_correct, error_type, time_bracket, req.confidence)
+    review_queue.add_or_update(concept_id, grade)
+
+    # Persist to Supabase
+    save_session_response(req.student_id, {
+        "question_id": req.question_id,
+        "answer_selected": req.answer_selected,
+        "is_correct": is_correct,
+        "error_type": error_type,
+        "time_taken_ms": req.time_taken_ms,
+        "confidence": req.confidence,
+        "concept_id": concept_id,
+    })
+
+    return {
+        "is_correct": is_correct,
+        "error_type": error_type,
+        "correct_answer": question["correct_answer"],
+        "concept_id": concept_id,
+        "minimal_cut_set": list(mcs),
+        "misconception_descriptions": misconception_descriptions,
+        "blame_propagation": blame_result,
+        "mastery_update": {
+            "concept_id": concept_id,
+            "new_mastery": round(tracker.get_mastery(concept_id), 2),
+            "state": tracker.get_mastery_state(concept_id),
+        },
+        "irt_update": irt_update,
+        "calibration": calibration,
+        "bt_action": bt_action.to_dict(),
+        "explanation": explanation,
+        "learner_state": learner_state,
+        "review_queue": review_queue.to_serializable()[:3],
+    }
+
+
+def _get_time_bracket(time_ms: int, question: dict) -> str:
+    """Classify response time as fast/medium/slow."""
+    avg = question.get("avg_time_incorrect_ms", 30000)
+    ratio = time_ms / max(avg, 1)
+    if ratio < 0.5:
+        return "fast"
+    if ratio < 1.5:
+        return "medium"
+    return "slow"
+
+
+# ─────────────────────────────────────────────────────────────────
+# SM-2 Review Queue
+# ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/sm2/queue/{student_id}")
+def get_review_queue_endpoint(student_id: str):
+    rq = _get_review_queue(student_id)
+    return {
+        "student_id": student_id,
+        "queue": rq.to_serializable(),
+        "due_items": [
+            {**item, "concept_name": concept_dag.nodes.get(item["concept_id"], {}).get("name", "")}
+            for item in rq.get_due_items()
+        ],
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# IRT & Next Question
+# ─────────────────────────────────────────────────────────────────
 
 @app.post("/api/irt/next-question")
 def get_next_question_irt(req: NextQuestionRequest):
@@ -393,10 +695,10 @@ def get_next_question_irt(req: NextQuestionRequest):
     questions = load_questions()
     used_ids = {qid for qid, _, _ in irt_tracker.history}
     next_q = select_next_question(questions, irt_tracker.theta, used_ids)
-    
+
     if not next_q:
         return {"status": "Complete", "message": "No more questions available"}
-        
+
     return {
         "status": "Success",
         "question": {
@@ -412,13 +714,65 @@ def get_next_question_irt(req: NextQuestionRequest):
         "current_theta": round(irt_tracker.theta, 3)
     }
 
+
 @app.get("/api/irt/student/{student_id}")
 def get_irt_student(student_id: str):
-    """
-    Returns the generic state summary (calibration, rolling brier score, theta) for a given student.
-    """
     tracker = _get_irt_tracker(student_id)
     return tracker.get_state_summary()
+
+
+# ─────────────────────────────────────────────────────────────────
+# Auth (Supabase or in-memory fallback)
+# ─────────────────────────────────────────────────────────────────
+
+# In-memory user store for fallback
+_inmemory_users: dict[str, dict] = {}
+
+
+@app.post("/api/auth/register")
+def auth_register(req: AuthRequest):
+    """Register a new student."""
+    if is_connected():
+        result = register_student(req.email, req.password, req.name)
+        if result:
+            return {"status": "success", "user": result}
+        raise HTTPException(status_code=400, detail="Registration failed")
+
+    # In-memory fallback
+    if req.email in _inmemory_users:
+        raise HTTPException(status_code=400, detail="User already exists")
+    user_id = f"user_{len(_inmemory_users) + 1}"
+    _inmemory_users[req.email] = {
+        "id": user_id,
+        "email": req.email,
+        "password": req.password,
+        "name": req.name,
+    }
+    return {"status": "success", "user": {"id": user_id, "email": req.email, "name": req.name}}
+
+
+@app.post("/api/auth/login")
+def auth_login(req: AuthRequest):
+    """Login a student."""
+    if is_connected():
+        result = login_student(req.email, req.password)
+        if result:
+            return {"status": "success", "user": result}
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    # In-memory fallback
+    user = _inmemory_users.get(req.email)
+    if not user or user["password"] != req.password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {
+        "status": "success",
+        "user": {"id": user["id"], "email": user["email"], "name": user["name"]}
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# Health & Info
+# ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
 def health():
@@ -427,6 +781,15 @@ def health():
         "concepts_loaded": len(concept_dag.nodes),
         "misconceptions_loaded": len(concept_dag.mc_to_concept),
         "questions_loaded": len(load_questions()),
+        "supabase_connected": is_connected(),
+        "engines": {
+            "fault_tree": True,
+            "dag_blame": True,
+            "irt": True,
+            "behavior_tree": True,
+            "sm2": True,
+            "explainability": True,
+        }
     }
 
 
