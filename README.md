@@ -57,7 +57,7 @@ Our remediation logic is orchestrated by a **Behavior Tree**. It switches betwee
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-repo/zentrix.git
+   git clone https://github.com/crazy-coder-neel/zentrix.git
    cd zentrix
    ```
 
