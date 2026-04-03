@@ -58,7 +58,8 @@ def get_transcript(video_url: str, max_chars: int = 8000) -> Optional[str]:
 
         full_text = re.sub(r'\[.*?\]', '', full_text)       
         full_text = re.sub(r'&amp;', '&', full_text)
-        full_text = re.sub(r'&
+        full_text = re.sub(r'&quot;', '"', full_text)
+        full_text = re.sub(r'&#39;', "'", full_text)
         full_text = re.sub(r'\s+', ' ', full_text).strip()
 
         return full_text[:max_chars]
