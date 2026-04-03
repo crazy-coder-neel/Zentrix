@@ -1,40 +1,90 @@
-# 🚀 Deployment Guide — Episteme & IntelliRev
+# Σ Episteme — The Deterministic Learning Engine
 
-This project is a unified learning platform using a **React Frontend** and a **FastAPI Backend (Deterministic NLP/Cognitive Engines)**.
+**Tagline:** *A deterministic AI that diagnoses why students fail algebra — and fixes the root cause.*
 
-## 1. ⚛️ Frontend Deployment (Vercel)
-The frontend is pre-configured for Vercel with SPA routing.
+---
 
-- **Project Root**: `frontend/`
-- **Build Command**: `npm run build`
-- **Output Directory**: `dist`
-- **Environment Variables**:
-  - `VITE_API_URL`: Your deployed Backend URL (e.g., `https://backend.render.com`)
-  - `VITE_SUPABASE_URL`: Your Supabase URL
-  - `VITE_SUPABASE_ANON_KEY`: Your Supabase Anon Key
+## 🏛️ Project Overview
 
-## 2. 🐍 Backend Deployment (Render / Railway / Docker)
-The backend requires heavy Python libraries (`spacy`, `nltk`, `scikit-learn`) and is best suited for **Render**, **Railway**, or any **Dockerized** host.
+**Episteme** replaces the uncertainty of "guessing" AI models with a rigorous, clinically-inspired diagnostic engine. While standard LLMs often hallucinate or provide shallow corrections, Episteme uses **Deterministic NLP**, **Fault Tree Analysis (FTA)**, and **Knowledge DAGS** to mathematically identify the cognitive gaps preventing a student from mastering a concept.
 
-### Option A: Render (Easiest)
-- **Runtime**: `Python` or `Docker`
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn app:app --host 0.0.0.0 --port $PORT`
-- **Environment Variables**:
-  - `SUPABASE_URL`: Your Supabase URL
-  - `SUPABASE_KEY`: Your Supabase Key (Service Role or Anon)
-  - `TAVILY_API_KEY`: Your Tavily API Key
-  - `FRONTEND_URL`: Your deployed Vercel URL
+**IntelliRev** is the student-facing platform that makes this engine accessible, transforming raw syllabi into structured, adaptive learning paths with zero hallucinations.
 
-### Option B: Docker
-If your host supports Docker (like DigitalOcean, AWS, or Railway), use the provided `backend/Dockerfile`. It pre-bundles all dependencies and NLTK data for fast startup.
+---
 
-## 3. ⚙️ Supabase Setup
-Ensure your Supabase project has the initial schema and buckets:
-1.  Run the code in `backend/db/schema.sql` (if available) or create a `students` and `responses` table.
-2.  Enable **Row Level Security (RLS)** or set up appropriate policies.
-3.  Add your Supabase URL and Key to **both** frontend and backend environments.
+## 🧠 The Intelligence Stack
 
-## 💡 Troubleshooting
-- **CORS Errors**: Ensure the `FRONTEND_URL` in the backend `.env` matches your Vercel deployment URL.
-- **spaCy Errors**: If you encounter an "en_core_web_sm not found" error during the build, ensure the start command is preceded by `python -m spacy download en_core_web_sm` if not using the Dockerfile.
+### 1. Fault Tree Engine (The "Why")
+Every question in our system is backed by a clinical Fault Tree. When a student fails a question, the engine traverses **AND/OR gates** to identify the **Minimal Cut Set** — the exact prerequisite or specific logic point that failed.
+
+### 2. Prerequisite Knowledge DAG
+Concepts are stored in a **Directed Acyclic Graph**. If a student fails a "Differential Calculator" problem, the system uses **Blame Backpropagation** to trace the failure back to upstream concepts like "Limit Theorems" or "Basic Algebra."
+
+### 3. IRT Ability Estimation 
+Using **Item Response Theory (IRT)**, we estimate a student’s latent ability (θ). Unlike raw scores, θ represents the probability of mastery, allowing the engine to select questions that are perfectly calibrated to the student's edge of knowledge.
+
+### 4. Behavior Tree Sequencer
+Our remediation logic is orchestrated by a **Behavior Tree**. It switches between **DRILL**, **REMEDY**, and **ADVANCE** modes based on real-time fatigue metrics and calibration state, ensuring the student stays in the "Flow Zone."
+
+---
+
+## ✨ Features
+
+- **Autonomous Ingestion**: Upload a syllabus (Text/PDF) and the system auto-extracts a 5-day study plan via TF-IDF and NLP.
+- **RAG-Powered Smart QA**: Textbook context combined with curated YouTube transcripts ensures answers are grounded in ground-truth facts.
+- **Cognitive Consistency Grid**: A GitHub-style activity heatmap that tracks cognitive resonance and learning streaks.
+- **Explainable Feedback**: Judges and teachers can see the "Decision Trace" behind every diagnostic result.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 19, Tailwind CSS (Vanilla CSS components), Framer Motion, Recharts.
+- **Backend**: FastAPI (Python 3.11), spaCy (POS/NER), NLTK (Summarization), Scikit-Learn (TF-IDF).
+- **Core Engine**: `py-trees` (Behavior Trees), Custom FTA Engine, `networkx` (DAG management).
+- **Database**: Supabase (PostgreSQL + Auth + Vector Storage).
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- Supabase Account
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-repo/zentrix.git
+   cd zentrix
+   ```
+
+2. **Backend Setup**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   # Setup .env with SUPABASE_URL, SUPABASE_KEY, and TAVILY_API_KEY
+   python app.py
+   ```
+
+3. **Frontend Setup**
+   ```bash
+   cd ../frontend
+   npm install
+   # Setup .env with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+   npm run dev
+   ```
+
+---
+
+## 🌐 Deployment
+
+- **Frontend**: Targeted for **Vercel** (`frontend/vercel.json` included).
+- **Backend**: Optimized for **Render/Docker** (`backend/Dockerfile` included).
+
+---
+
+## 📝 License
+Built for the **Google Deepmind Agentic Coding Hackathon**. Copyright © 2026.
