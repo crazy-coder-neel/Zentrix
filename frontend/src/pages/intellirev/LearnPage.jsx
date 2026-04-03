@@ -51,23 +51,11 @@ export default function LearnPage() {
     setVideoSummary(null)
     setShowSummary(false)
 
-    if (topicId === 'demo') {
-      setTimeout(() => {
-        setContent({
-          topic_id: 'demo', topic_name: topicName,
-          video: { video_id: 'dQw4w9WgXcQ', title: `${topicName} — Complete Tutorial`, url: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`, embed_url: `https://www.youtube.com/embed/dQw4w9WgXcQ`, duration: 720, views: 1200000 },
-          summary: [`${topicName} is a foundational concept widely used in computer science.`, 'It provides a structured approach to solving complex problems.', 'Key components include data structures and algorithmic patterns.', 'Applications range from software development to AI.'],
-          keywords: ['Algorithm', 'Data Structure', 'Complexity', 'Optimization'],
-          resources: [{ title: `${topicName} — Wikipedia`, url: `https://en.wikipedia.org/wiki/${topicName.replace(' ', '_')}`, snippet: 'Comprehensive overview.' }],
-        })
-        setNotes([`${topicName} is a foundational concept widely used in computer science.`, 'It provides a structured approach to solving complex problems.', 'Key components include data structures and algorithmic patterns.', 'Applications range from software development to AI.'])
-        setNotesGenerated(true)
-        setLoading(false)
-      }, 600)
-      return
-    }
+    const url = topicId === 'demo' 
+      ? `${API}/intellirev/discover?topic=${encodeURIComponent(topicName)}`
+      : `${API}/intellirev/learn/${topicId}`;
 
-    fetch(`${API}/intellirev/learn/${topicId}`)
+    fetch(url)
       .then(r => r.ok ? r.json() : Promise.reject(r))
       .then(data => {
         setContent(data)
@@ -76,9 +64,8 @@ export default function LearnPage() {
           setNotesKeywords(data.keywords || [])
           setNotesGenerated(true)
         }
-        setLoading(false)
+        setLoading(false) 
       })
-      .catch(() => { setError('Could not load content. Try from the study plan.'); setLoading(false) })
   }, [topicId, topicName])
 
   const generateNotes = useCallback(async (force = false) => {

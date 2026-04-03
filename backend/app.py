@@ -107,6 +107,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal Server Error", "message": str(exc)},
     )
 
+@app.get("/")
+def read_root():
+    return {"message": "Zentrix-IntelliRev API is operational", "health_endpoint": "/health"}
+
 app.include_router(intellirev_router, prefix="/intellirev", tags=["IntelliRev"])
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "questions.json")
@@ -232,4 +236,5 @@ def unified_health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    # Set reload to False in production to avoid unexpected restarts
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

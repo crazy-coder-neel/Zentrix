@@ -60,12 +60,14 @@ async def upload_syllabus(
 
     db = get_client()
     topic_ids = {}
+    plan_id = str(uuid.uuid4())
+    plan_title = topics[0] + " Study Plan" if topics else "Study Plan"
+    
     try:
-
-        plan_id = str(uuid.uuid4())
         db.table("plans").insert({
             "id": plan_id,
             "user_id": user_id,
+            "title": plan_title,
             "schedule": plan,
         }).execute()
 
@@ -95,8 +97,9 @@ async def get_plan(user_id: str):
             raise HTTPException(status_code=404, detail="No plan found for this user.")
         plan = result.data[0]
 
-        topics_result = db.table("topics").select("*").eq("user_id", user_id).order("day").execute()
-        return {"plan": plan["schedule"], "topics": topics_result.data}
+        topics_result = db.table("topics").select("id, name").eq("plan_id", plan["id"]).execute()
+        topic_ids = {t["name"]: t["id"] for t in topics_result.data}
+        return {"plan": plan["schedule"], "topics": plan["schedule"], "topic_ids": topic_ids}
     except HTTPException:
         raise
     except Exception as e:
@@ -115,24 +118,10 @@ async def get_learn_content(topic_id: str):
         raise HTTPException(status_code=404, detail="Topic not found.")
 
     topic_name = topic["name"]
-
-    context_prefix = ""
-    try:
-        user_id = topic.get("user_id")
-        if user_id:
-            plan_res = db.table("plans").select("syllabus_text").eq("user_id", user_id).limit(1).execute()
-            if plan_res.data:
-                context_prefix = plan_res.data[0].get("syllabus_text", "")[:30].replace("\n", " ") + " "
-    except Exception:
-        pass
-
-    search_query = f"{context_prefix}{topic_name}".strip()
-
+    user_id = topic.get("user_id")
+    
+    # Try to find existing discovery content in DB
     video_data = None
-    resources_data = []
-    summary_data = []
-    keywords_data = []
-
     try:
         cached_video = db.table("videos").select("*").eq("topic_id", topic_id).limit(1).execute()
         if cached_video.data:
@@ -148,66 +137,92 @@ async def get_learn_content(topic_id: str):
     except Exception:
         pass
 
-    if not video_data:
-
-        video_raw = discovery_service.search_youtube(search_query)
-        if video_raw:
-            video_data = video_raw
-            try:
-                db.table("videos").insert({
-                    "topic_id": topic_id,
-                    **video_raw,
-                }).execute()
-            except Exception:
-                pass
-
-    try:
-        cached_resources = db.table("resources").select("*").eq("topic_id", topic_id).execute()
-        if cached_resources.data:
-            resources_data = [{"title": r["title"], "url": r["url"], "snippet": r.get("snippet")} for r in cached_resources.data]
-    except Exception:
-        pass
-
-    if not resources_data:
-
-        resources_raw = discovery_service.search_web_resources(search_query)
-        resources_data = resources_raw
+    if video_data:
+        # If we have a video, we might also have resources and notes
         try:
-            for r in resources_raw:
+            res_result = db.table("resources").select("*").eq("topic_id", topic_id).execute()
+            resources = [{"title": r["title"], "url": r["url"], "snippet": r.get("snippet")} for r in res_result.data]
+            
+            notes_result = db.table("notes").select("*").eq("topic_id", topic_id).limit(1).execute()
+            summary = []
+            keywords = []
+            if notes_result.data:
+                summary = notes_result.data[0].get("summary", [])
+                keywords = notes_result.data[0].get("keywords", [])
+                
+            return LearnContentResponse(
+                topic_id=topic_id,
+                topic_name=topic_name,
+                video=video_data,
+                summary=summary,
+                keywords=keywords,
+                resources=resources,
+            )
+        except Exception:
+            pass
+
+    # If not cached, perform discovery
+    return await discover_topic_content(topic_name, topic_id, user_id)
+
+@router.get("/discover")
+async def discover_topic_content_only(topic: str):
+    return await discover_topic_content(topic)
+
+async def discover_topic_content(topic_name: str, topic_id: str = None, user_id: str = None):
+    db = get_client()
+    context_prefix = ""
+    if user_id:
+        try:
+            plan_res = db.table("plans").select("syllabus_text").eq("user_id", user_id).limit(1).execute()
+            if plan_res.data:
+                context_prefix = plan_res.data[0].get("syllabus_text", "")[:30].replace("\n", " ") + " "
+        except Exception:
+            pass
+
+    search_query = f"{context_prefix}{topic_name}".strip()
+    
+    # 1. YouTube Discovery
+    video_data = discovery_service.search_youtube(search_query)
+    if video_data and topic_id:
+        try:
+            db.table("videos").insert({"topic_id": topic_id, **video_data}).execute()
+        except Exception:
+            pass
+
+    # 2. Web Resources Discovery
+    resources_data = discovery_service.search_web_resources(search_query)
+    if resources_data and topic_id:
+        try:
+            for r in resources_data:
                 db.table("resources").insert({"topic_id": topic_id, **r}).execute()
         except Exception:
             pass
 
-    try:
-        cached_notes = db.table("notes").select("*").eq("topic_id", topic_id).limit(1).execute()
-        if cached_notes.data:
-            note = cached_notes.data[0]
-            summary_data = note.get("summary", [])
-            keywords_data = note.get("keywords", [])
-    except Exception:
-        pass
-
-    if (not summary_data) and video_data:
+    # 3. Transcript & Notes Generation
+    summary_data = []
+    keywords_data = []
+    if video_data:
         try:
             transcript_text = transcript_service.get_transcript(video_data["url"])
             if transcript_text:
                 summary_data = summarizer_service.textrank_summarize(transcript_text, n=8)
                 keywords_data = keyword_service.extract_keywords(transcript_text, k=10)
-                try:
-                    db.table("notes").insert({
-                        "topic_id": topic_id,
-                        "topic_name": topic_name,
-                        "summary": summary_data,
-                        "keywords": keywords_data,
-                        "raw_text": transcript_text[:5000],
-                    }).execute()
-                except Exception:
-                    pass
+                if topic_id:
+                    try:
+                        db.table("notes").insert({
+                            "topic_id": topic_id,
+                            "topic_name": topic_name,
+                            "summary": summary_data,
+                            "keywords": keywords_data,
+                            "raw_text": transcript_text[:5000],
+                        }).execute()
+                    except Exception:
+                        pass
         except Exception as e:
-            logger.warning(f"Transcript/summary failed: {e}")
+            logger.warning(f"Discovery transcript failed for {topic_name}: {e}")
 
     return LearnContentResponse(
-        topic_id=topic_id,
+        topic_id=topic_id or "temp_id",
         topic_name=topic_name,
         video=video_data,
         summary=summary_data,
@@ -533,11 +548,14 @@ async def upload_book(
 
     plan_id = str(uuid.uuid4())
     topic_ids = {}
+    plan_title = file.filename.replace(".pdf", "").replace("_", " ").title() if file.filename else "Course Plan"
+
     try:
         db = get_client()
         db.table("plans").insert({
             "id": plan_id,
             "user_id": user_id,
+            "title": plan_title,
             "schedule": plan,
         }).execute()
 
