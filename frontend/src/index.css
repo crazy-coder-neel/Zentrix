@@ -89,3 +89,8 @@ h1, h2, h3, .font-headline {
 @utility glow-yellow {
   filter: drop-shadow(0 0 10px rgba(253, 211, 77, 0.15));
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,102 +1,138 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import * as d3 from 'd3'
+
+const API = 'http://localhost:8000'
+
+const STATE_COLORS = {
+  strong:     '#22c55e',
+  developing: '#fdd34d',
+  weak:       '#ff716c',
+  locked:     '#555555',
+}
 
 export default function DashboardDAG() {
   const svgRef = useRef(null)
+  const [dagData, setDagData] = useState(null)
+
+  // Fetch live DAG data from the backend
+  useEffect(() => {
+    fetch(`${API}/api/dag?student_id=default`)
+      .then(r => r.json())
+      .then(data => setDagData(data))
+      .catch(err => {
+        console.error('Failed to fetch DAG, using fallback:', err)
+        // Fallback to static data if backend is down
+        setDagData({
+          nodes: [
+            { id: 'C01', name: 'Signed Numbers', mastery: 0, state: 'weak', tier: 0 },
+            { id: 'C03', name: 'Variables', mastery: 0, state: 'weak', tier: 0 },
+            { id: 'C07', name: 'One-Step Eq.', mastery: 0, state: 'locked', tier: 2 },
+            { id: 'C08', name: 'Two-Step Eq.', mastery: 0, state: 'locked', tier: 2 },
+            { id: 'C09', name: 'Vars Both Sides', mastery: 0, state: 'locked', tier: 2 },
+            { id: 'C12', name: 'y = mx + b', mastery: 0, state: 'locked', tier: 3 },
+          ],
+          edges: [
+            { from: 'C01', to: 'C07' },
+            { from: 'C03', to: 'C07' },
+            { from: 'C07', to: 'C08' },
+            { from: 'C08', to: 'C09' },
+            { from: 'C08', to: 'C12' },
+          ],
+        })
+      })
+  }, [])
 
   useEffect(() => {
-    if (!svgRef.current) return
+    if (!svgRef.current || !dagData) return
 
-    const nodes = [
-      { id: "Factorization", name: "Factorization", mastery: 92, type: "core" },
-      { id: "QuadraticForms", name: "Quadratic Forms", mastery: 75, type: "core" },
-      { id: "Identities", name: "Identities", mastery: 85, type: "prereq" },
-      { id: "ModP", name: "Mod p", mastery: 40, type: "prereq" },
-      { id: "Functions", name: "Functions", mastery: 68, type: "prereq" },
-      { id: "DiffSquares", name: "Diff. of Squares", mastery: 38, type: "prereq" },
-    ]
+    const nodes = dagData.nodes.map(n => ({
+      id: n.id,
+      name: n.name,
+      mastery: n.mastery || 0,
+      state: n.state || 'weak',
+      tier: n.tier,
+    }))
 
-    const links = [
-      { source: "Identities", target: "Factorization" },
-      { source: "DiffSquares", target: "Factorization" },
-      { source: "Factorization", target: "QuadraticForms" },
-      { source: "ModP", target: "QuadraticForms" },
-      { source: "Functions", target: "QuadraticForms" },
-    ]
+    const nodeById = {}
+    nodes.forEach(n => { nodeById[n.id] = n })
+
+    const links = dagData.edges
+      .filter(e => nodeById[e.from] && nodeById[e.to])
+      .map(e => ({
+        source: e.from,
+        target: e.to,
+      }))
 
     const width = 500
     const height = 320
 
     const svg = d3.select(svgRef.current)
-    svg.selectAll("*").remove()
-    svg.attr("viewBox", `0 0 ${width} ${height}`)
+    svg.selectAll('*').remove()
+    svg.attr('viewBox', `0 0 ${width} ${height}`)
 
-    const g = svg.append("g")
+    const g = svg.append('g')
 
     const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id(d => d.id).distance(90))
-      .force("charge", d3.forceManyBody().strength(-350))
-      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force('link', d3.forceLink(links).id(d => d.id).distance(90))
+      .force('charge', d3.forceManyBody().strength(-350))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide(30))
 
     // Links
-    const link = g.append("g")
-      .selectAll("line")
+    const link = g.append('g')
+      .selectAll('line')
       .data(links)
-      .join("line")
-      .attr("stroke", "rgba(255, 143, 111, 0.3)")
-      .attr("stroke-width", 2)
+      .join('line')
+      .attr('stroke', 'rgba(255, 143, 111, 0.3)')
+      .attr('stroke-width', 2)
 
     // Nodes
-    const node = g.append("g")
-      .selectAll("g")
+    const node = g.append('g')
+      .selectAll('g')
       .data(nodes)
-      .join("g")
+      .join('g')
 
-    node.append("circle")
-      .attr("r", d => d.type === 'core' ? 26 : 18)
-      .attr("fill", "#1a1a1a")
-      .attr("stroke", d => {
-        if (d.mastery > 80) return "#22c55e"
-        if (d.mastery > 60) return "#fdd34d"
-        return "#ff716c"
-      })
-      .attr("stroke-width", 3)
-      .style("cursor", "grab")
+    node.append('circle')
+      .attr('r', d => d.tier <= 1 ? 18 : 22)
+      .attr('fill', '#1a1a1a')
+      .attr('stroke', d => STATE_COLORS[d.state] || '#555')
+      .attr('stroke-width', 3)
+      .style('cursor', 'grab')
       .call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended))
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended))
 
     // Mastery % inside node
-    node.append("text")
-      .attr("dy", 4)
-      .attr("text-anchor", "middle")
-      .text(d => d.mastery + '%')
-      .attr("font-size", d => d.type === 'core' ? "11px" : "9px")
-      .attr("fill", "#fff")
-      .attr("font-weight", 700)
-      .attr("font-family", "Inter, sans-serif")
-      .style("pointer-events", "none")
+    node.append('text')
+      .attr('dy', 4)
+      .attr('text-anchor', 'middle')
+      .text(d => Math.round(d.mastery) + '%')
+      .attr('font-size', d => d.tier <= 1 ? '9px' : '11px')
+      .attr('fill', '#fff')
+      .attr('font-weight', 700)
+      .attr('font-family', 'Inter, sans-serif')
+      .style('pointer-events', 'none')
 
     // Labels below
-    node.append("text")
-      .attr("dy", d => d.type === 'core' ? 40 : 32)
-      .attr("text-anchor", "middle")
-      .text(d => d.name)
-      .attr("font-size", "11px")
-      .attr("fill", "#adaaaa")
-      .attr("font-weight", 500)
-      .attr("font-family", "Inter, sans-serif")
-      .style("pointer-events", "none")
+    node.append('text')
+      .attr('dy', d => d.tier <= 1 ? 32 : 36)
+      .attr('text-anchor', 'middle')
+      .text(d => d.name.length > 18 ? d.name.slice(0, 16) + '…' : d.name)
+      .attr('font-size', '10px')
+      .attr('fill', '#adaaaa')
+      .attr('font-weight', 500)
+      .attr('font-family', 'Inter, sans-serif')
+      .style('pointer-events', 'none')
 
-    simulation.on("tick", () => {
+    simulation.on('tick', () => {
       link
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y)
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y)
 
-      node.attr("transform", d => `translate(${
+      node.attr('transform', d => `translate(${
         Math.max(30, Math.min(width - 30, d.x))
       },${
         Math.max(30, Math.min(height - 40, d.y))
@@ -118,7 +154,8 @@ export default function DashboardDAG() {
       event.subject.fy = null
     }
 
-  }, [])
+    return () => simulation.stop()
+  }, [dagData])
 
   return (
     <div style={{ width: '100%', height: '320px', position: 'relative' }}>

@@ -2,9 +2,13 @@ import { useEffect } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import './index.css'
-import { BrowserRouter, Routes, Route } from 'react-router'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import DashboardPage from './pages/DashboardPage'
+import FaultTreePage from './pages/FaultTreePage'
+import KnowledgeDAGPage from './pages/KnowledgeDAGPage'
+import BehaviorTreePage from './pages/BehaviorTreePage'
+import SessionPage from './pages/SessionPage'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import QuizGeneratorPage from './pages/QuizGeneratorPage'
@@ -22,6 +26,10 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/fault-tree-demo" element={<FaultTreePage />} />
+        <Route path="/knowledge-dag" element={<KnowledgeDAGPage />} />
+        <Route path="/behavior-tree" element={<BehaviorTreePage />} />
+        <Route path="/session" element={<SessionPage />} />
         <Route path="/quiz-generator" element={<QuizGeneratorPage />} />
         <Route path="/quiz" element={<QuizPage />} />
       </Routes>
