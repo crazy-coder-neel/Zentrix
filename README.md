@@ -87,4 +87,4 @@ Our remediation logic is orchestrated by a **Behavior Tree**. It switches betwee
 ---
 
 ## 📝 License
-Built for the **Google Deepmind Agentic Coding Hackathon**. Copyright © 2026.
+Built for the **Codewiser Hackathon**. Copyright © 2026.
