@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { supabase } from '../../supabase'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001' 
 
 const FEATURES = [
   { icon: 'calendar_month', title: 'Smart Study Plan', desc: '5-day adaptive schedule built from your syllabus using TF-IDF + NLP topic extraction.', color: 'from-primary/20 to-primary/5', accent: 'text-primary' },
@@ -15,6 +15,7 @@ const FEATURES = [
 
 export default function IntelliRevHome() {
   const navigate = useNavigate()
+  const [user, setUser] = useState(null)
   const [tab, setTab] = useState('text') 
   const [text, setText] = useState('')
   const [dragging, setDragging] = useState(false)
@@ -23,6 +24,13 @@ export default function IntelliRevHome() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser(user)
+      else navigate('/login')
+    })
+  }, [navigate])
 
   const handleDrop = (e) => {
     e.preventDefault()
@@ -49,7 +57,7 @@ export default function IntelliRevHome() {
 
     try {
       const formData = new FormData()
-      formData.append('user_id', USER_ID)
+      formData.append('user_id', user?.id || 'guest_user_001')
       if (tab === 'text') {
         formData.append('text', text)
       } else {

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { HiOutlineBell, HiOutlineSearch } from 'react-icons/hi'
+import { supabase } from '../supabase'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
+  const [user, setUser] = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user))
     const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
@@ -24,9 +27,9 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       >
         <div className={styles.container}>
-          <a href="#" className={styles.logo}>
-            <span className={styles.logoIcon}>Σ</span>
-            <span>Episteme</span>
+          <a href="/" className={styles.logo}>
+            <img src="/logo.png" alt="Episteme Logo" className="h-8 w-auto mr-2" />
+            <span className="font-extrabold tracking-tighter">Episteme</span>
           </a>
 
           <ul className={styles.links}>
@@ -46,7 +49,9 @@ export default function Navbar() {
             <button className={styles.iconBtn} aria-label="Notifications">
               <HiOutlineBell size={18} />
             </button>
-            <div className={styles.avatar}>A</div>
+            <div className={styles.avatar}>
+              {user?.user_metadata?.full_name?.[0].toUpperCase() || user?.email?.[0].toUpperCase() || 'S'}
+            </div>
           </div>
 
           <button

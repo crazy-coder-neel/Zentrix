@@ -105,7 +105,10 @@ export default function DashboardPage() {
       {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
-          <Link to="/" className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</Link>
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Episteme Logo" className="h-8 w-auto" />
+            <span className="text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
+          </Link>
           <div className="hidden md:flex gap-8 items-center font-headline text-sm font-medium tracking-wide">
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#intellirev">IntelliRev</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#dag">Knowledge DAG</a>
@@ -129,7 +132,9 @@ export default function DashboardPage() {
         {}
         <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">Welcome back, Curator.</h1>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">
+              Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Curator'}.
+            </h1>
             <p className="text-on-surface-variant text-lg">Your cognitive resonance is at <span className="text-secondary font-bold">88.4%</span> capacity today.</p>
           </div>
         </header>

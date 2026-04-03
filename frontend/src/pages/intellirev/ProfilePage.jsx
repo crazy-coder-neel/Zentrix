@@ -113,7 +113,9 @@ export default function ProfilePage() {
       <div className="max-w-screen-xl mx-auto px-8 py-10">
         <div className="mb-10">
           <span className="text-xs font-bold uppercase tracking-widest text-primary mb-1 block">IntelliRev</span>
-          <h1 className="font-headline text-4xl font-extrabold text-white">Your Learning Profile</h1>
+          <h1 className="font-headline text-4xl font-extrabold text-white">
+            {user?.user_metadata?.full_name || 'Student'}'s Learning Profile
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -235,10 +237,10 @@ export default function ProfilePage() {
                   {[{ rank: 1, user_id: 'student_alpha', total_score: 520, streak: 12 },
                     { rank: 2, user_id: 'learner_bravo', total_score: 410, streak: 8 },
                     { rank: 3, user_id: 'guest_user_001', total_score: 320, streak: 5 }].map(e => (
-                    <div key={e.user_id} className={`flex items-center gap-3 p-3 rounded-xl ${e.user_id === USER_ID ? 'bg-primary-dim text-on-primary/10 border border-primary/20' : 'bg-background border border-white/5'}`}>
+                    <div key={e.user_id} className={`flex items-center gap-3 p-3 rounded-xl ${e.user_id === (user?.id || 'guest_user_001') ? 'bg-primary-dim text-on-primary/10 border border-primary/20' : 'bg-background border border-white/5'}`}>
                       <span className={`text-lg font-black w-8 text-center ${e.rank === 1 ? 'text-yellow-400' : e.rank === 2 ? 'text-stone-400' : 'text-orange-700'}`}>#{e.rank}</span>
                       <div className="flex-1">
-                        <p className={`text-sm font-bold ${e.user_id === USER_ID ? 'text-primary' : 'text-white'}`}>{e.user_id}</p>
+                        <p className={`text-sm font-bold ${e.user_id === (user?.id || 'guest_user_001') ? 'text-primary' : 'text-white'}`}>{e.user_id}</p>
                         <p className="text-stone-500 text-xs">{e.streak}🔥 streak</p>
                       </div>
                       <span className="text-yellow-400 font-black">{e.total_score}</span>
@@ -248,7 +250,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {leaderboard.map(e => (
-                    <div key={e.user_id} className={`flex items-center gap-3 p-3 rounded-xl ${e.user_id === USER_ID ? 'bg-primary-dim text-on-primary/10 border border-primary/20' : 'bg-background border border-white/5'}`}>
+                    <div key={e.user_id} className={`flex items-center gap-3 p-3 rounded-xl ${e.user_id === (user?.id || 'guest_user_001') ? 'bg-primary-dim text-on-primary/10 border border-primary/20' : 'bg-background border border-white/5'}`}>
                       <span className={`text-lg font-black w-8 text-center ${e.rank === 1 ? 'text-yellow-400' : e.rank === 2 ? 'text-stone-400' : 'text-stone-600'}`}>#{e.rank}</span>
                       <div className="flex-1"><p className="text-sm font-bold text-white">{e.user_id}</p></div>
                       <span className="text-yellow-400 font-black">{e.total_score}</span>

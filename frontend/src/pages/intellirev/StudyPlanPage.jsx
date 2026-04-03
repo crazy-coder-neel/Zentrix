@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-
+import { supabase } from '../../supabase'
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001'
 
 const DAY_COLORS = [
   'from-primary/20 to-primary/40',
@@ -22,6 +21,8 @@ const DAY_BORDER = [
 
 export default function StudyPlanPage() {
   const navigate = useNavigate()
+
+  const [user, setUser] = useState(null)
   const [plan, setPlan] = useState(null)
   const [topicIds, setTopicIds] = useState({})
   const [loading, setLoading] = useState(true)
@@ -37,28 +38,36 @@ export default function StudyPlanPage() {
   const [isUploadingBooks, setIsUploadingBooks] = useState(false)
 
   useEffect(() => {
-    const cached = sessionStorage.getItem('intellirev_plan')
-    if (cached) {
-      try {
-        const data = JSON.parse(cached)
-        setPlan(data.plan)
-        setTopicIds(data.topic_ids || {})
-        setLoading(false)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        navigate('/login')
         return
-      } catch (e) {  }
-    }
-    fetch(`${API}/intellirev/plan/${USER_ID}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r))
-      .then(data => {
-        setPlan(data.plan)
-        setTopicIds(data.topic_ids || {})
-        setLoading(false)
-      })
-      .catch(() => {
-        setError('No study plan found. Upload a syllabus first.')
-        setLoading(false)
-      })
-  }, [])
+      }
+      setUser(user)
+
+      const cached = sessionStorage.getItem('intellirev_plan')
+      if (cached) {
+        try {
+          const data = JSON.parse(cached)
+          setPlan(data.plan)
+          setTopicIds(data.topic_ids || {})
+          setLoading(false)
+          return
+        } catch (e) {  }
+      }
+      fetch(`${API}/intellirev/plan/${user.id}`)
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(data => {
+          setPlan(data.plan)
+          setTopicIds(data.topic_ids || {})
+          setLoading(false)
+        })
+        .catch(() => {
+          setError('No study plan found. Upload a syllabus first.')
+          setLoading(false)
+        })
+    })
+  }, [navigate])
 
   const handleBookUpload = async (e) => {
     const files = e.target.files
@@ -68,7 +77,7 @@ export default function StudyPlanPage() {
     for (let file of files) {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('user_id', USER_ID)
+      formData.append('user_id', user.id)
       try {
         await fetch(`${API}/intellirev/upload-book`, { method: 'POST', body: formData })
       } catch (err) {

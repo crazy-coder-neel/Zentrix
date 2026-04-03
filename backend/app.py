@@ -178,13 +178,15 @@ class AuthRequest(BaseModel):
 
 @app.post("/api/auth/register")
 def auth_register(req: AuthRequest):
-    result = register_student(req.email, req.password, req.name) if is_connected() else None
+    result = register_student(req.email, req.password, req.name)
     if result: return {"status": "success", "user": result}
-    return {"status": "success", "user": {"id": "guest_user_001", "email": req.email, "name": req.name}}
+    return {"status": "error", "message": "Cloud connection unavailable. Registration limited."}
 
 @app.post("/api/auth/login")
 def auth_login(req: AuthRequest):
-    return {"status": "success", "user": {"id": "guest_user_001", "email": req.email, "name": req.name}}
+    result = login_student(req.email, req.password)
+    if result: return {"status": "success", "user": result}
+    return {"status": "error", "message": "Invalid email or password"}
 
 @app.get("/health")
 def unified_health():

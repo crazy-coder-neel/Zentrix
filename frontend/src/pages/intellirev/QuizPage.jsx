@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
-
+import { supabase } from '../../supabase'
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USER_ID = 'guest_user_001'
 
 const DEMO_QUESTIONS = [
   { id: 'q1', question_text: 'What are the main components of a Neural Network?', question_type: 'mcq', answer: 'Input, Hidden, and Output layers', options: ['Input and Output only', 'Input, Hidden, and Output layers', 'Neurons and wires', 'Software and Hardware'] },
@@ -18,6 +17,7 @@ export default function QuizPage() {
   const topicName = searchParams.get('name') || 'Topic'
   const navigate = useNavigate()
 
+  const [user, setUser] = useState(null)
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -26,6 +26,13 @@ export default function QuizPage() {
   const [result, setResult] = useState(null)
   const [timer, setTimer] = useState(0)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser(user)
+      else navigate('/login')
+    })
+  }, [navigate])
 
   useEffect(() => {
     const interval = setInterval(() => setTimer(t => t + 1), 1000)
@@ -67,7 +74,7 @@ export default function QuizPage() {
 
   const handleSubmit = async () => {
     const payload = {
-      user_id: USER_ID,
+      user_id: user?.id || 'guest_user_001',
       topic_id: topicId,
       answers: questions.map(q => ({
         question_id: q.id,

@@ -7,7 +7,10 @@ export default function LandingPage() {
       {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
         <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
-          <div className="text-2xl font-bold tracking-tighter text-primary font-headline">Episteme</div>
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="Episteme Logo" className="h-8 w-auto" />
+            <span className="text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
+          </div>
           <div className="hidden md:flex items-center gap-8 font-headline text-sm font-medium tracking-wide">
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#features">Features</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#how-it-works">How It Works</a>

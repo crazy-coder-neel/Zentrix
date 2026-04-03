@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../supabase'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -9,6 +10,7 @@ export default function LearnPage() {
   const topicName = searchParams.get('name') || 'Topic'
   const navigate = useNavigate()
 
+  const [user, setUser] = useState(null)
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -19,11 +21,16 @@ export default function LearnPage() {
   const [notesKeywords, setNotesKeywords] = useState([])
   const [notesGenerated, setNotesGenerated] = useState(false)
   const [selectedBooks, setSelectedBooks] = useState([])
-  const USER_ID = 'guest_user_001'
-
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [videoSummary, setVideoSummary] = useState(null)
   const [showSummary, setShowSummary] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser(user)
+      else navigate('/login')
+    })
+  }, [navigate])
 
   const [qaQuestion, setQaQuestion] = useState('')
   const [qaAnswer, setQaAnswer] = useState(null)
@@ -109,7 +116,7 @@ export default function LearnPage() {
     for (let file of selectedBooks) {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('user_id', USER_ID)
+      formData.append('user_id', user?.id || 'guest_user_001')
       formData.append('topic_id', topicId)
       try {
         await fetch(`${API}/intellirev/upload-book`, { method: 'POST', body: formData })
