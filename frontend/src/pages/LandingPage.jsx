@@ -2,44 +2,58 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+
   return (
     <>
-      {}
       <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
-        <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
+        <div className="flex justify-between items-center px-4 md:px-8 py-4 max-w-screen-2xl mx-auto">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Episteme Logo" className="h-8 w-auto" />
-            <span className="text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
+            <img src="/logo.png" alt="Episteme Logo" className="h-7 md:h-8 w-auto" />
+            <span className="text-xl md:text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 font-headline text-sm font-medium tracking-wide">
+          
+          <div className="hidden lg:flex items-center gap-8 font-headline text-sm font-medium tracking-wide">
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#features">Features</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#how-it-works">How It Works</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#system">System</a>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-on-surface hover:text-primary font-headline font-bold text-sm transition-colors px-2">
-              Log In
-            </Link>
-            <Link to="/register" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-headline font-bold text-sm hover:scale-95 duration-200 ease-in-out transition-all shadow-lg shadow-primary/20">
-              Sign Up
-            </Link>
+
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link to="/login" className="text-on-surface hover:text-primary font-headline font-bold text-sm transition-colors px-2">Log In</Link>
+            <Link to="/register" className="hidden sm:block bg-primary text-on-primary px-6 py-2.5 rounded-full font-headline font-bold text-sm hover:scale-95 transition-all shadow-lg shadow-primary/20">Sign Up</Link>
+            <button 
+              className="lg:hidden p-2 text-stone-400"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+            </button>
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-[#0e0e0e] border-b border-white/5 p-6 space-y-4 animate-fadeIn">
+            <a className="block text-primary font-bold" href="#features" onClick={() => setMobileMenuOpen(false)}>Features</a>
+            <a className="block text-stone-400" href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+            <a className="block text-stone-400" href="#system" onClick={() => setMobileMenuOpen(false)}>System</a>
+            <Link className="block text-primary font-bold" to="/register" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+          </div>
+        )}
       </nav>
 
       <main>
         {}
         <section className="relative pt-24 pb-36 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
             <div className="max-w-4xl">
-              <span className="font-label text-xs uppercase tracking-[0.25em] text-primary font-bold mb-5 block">Deterministic Intelligence · No LLMs</span>
-              <h1 className="font-headline text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 leading-[0.9]">
+              <span className="font-label text-[10px] md:text-xs uppercase tracking-[0.25em] text-primary font-bold mb-5 block">Deterministic Intelligence · No LLMs</span>
+              <h1 className="font-headline text-5xl md:text-8xl font-extrabold tracking-tighter mb-8 leading-[0.9]">
                 Diagnose.<br />
                 Understand.<br />
                 <span className="text-secondary">Master.</span>
               </h1>
-              <p className="text-on-surface-variant text-xl max-w-xl mb-10 leading-relaxed">
-                Episteme is a deterministic AI system that diagnoses <strong className="text-on-surface">why</strong> students make mistakes in algebra — not just whether they're wrong — using Fault Trees, Knowledge DAGs, and Behavior Trees.
+              <p className="text-on-surface-variant text-lg md:text-xl max-w-xl mb-10 leading-relaxed">
+                Episteme is a deterministic AI system that diagnoses <strong className="text-on-surface">why</strong> students make mistakes in algebra — not just whether they're wrong.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/register" className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline font-bold text-lg hover:scale-95 duration-200 transition-all shadow-xl glow-orange inline-block">

@@ -119,7 +119,7 @@ export default function StudyPlanPage() {
 
   if (step === 'TIMINGS') {
     return (
-      <div className="min-h-screen bg-background p-12 flex flex-col items-center">
+      <div className="min-h-screen bg-background px-4 py-8 md:p-12 flex flex-col items-center">
         <div className="w-full max-w-7xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
           <div className="text-left">
             <h2 className="text-6xl font-headline font-black text-white tracking-tight mb-2">Build Your Blueprint</h2>

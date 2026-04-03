@@ -155,7 +155,9 @@ export default function ProfilePage() {
                   <span>More</span>
                 </div>
               </div>
-              <ConsistencyGrid activity={displayProfile.activity} />
+              <div className="overflow-x-auto pb-2">
+                <ConsistencyGrid activity={displayProfile.activity} />
+              </div>
             </div>
 
             {}

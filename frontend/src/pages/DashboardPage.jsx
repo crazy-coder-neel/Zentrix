@@ -9,6 +9,7 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const [uploadTab, setUploadTab] = useState('text') 
   const [text, setText] = useState('')
@@ -101,41 +102,54 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {}
-      <nav className="w-full top-0 sticky bg-[#0e0e0e]/95 backdrop-blur-xl z-50 border-b border-white/5">
-        <div className="flex justify-between items-center px-8 py-4 max-w-screen-2xl mx-auto">
+    <div className="min-h-screen flex flex-col bg-background">
+      <nav className="w-full top-0 sticky bg-background/95 backdrop-blur-xl z-50 border-b border-white/5">
+        <div className="flex justify-between items-center px-4 md:px-8 py-4 max-w-screen-2xl mx-auto">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Episteme Logo" className="h-8 w-auto" />
-            <span className="text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
+            <img src="/logo.png" alt="Episteme Logo" className="h-7 md:h-8 w-auto" />
+            <span className="text-xl md:text-2xl font-extrabold tracking-tighter text-primary font-headline">Episteme</span>
           </Link>
-          <div className="hidden md:flex gap-8 items-center font-headline text-sm font-medium tracking-wide">
+          
+          <div className="hidden lg:flex gap-8 items-center font-headline text-sm font-medium tracking-wide">
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#intellirev">IntelliRev</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#dag">Knowledge DAG</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#behavior-tree">Behavior Tree</a>
             <Link to="/fault-tree-demo" className="text-stone-400 hover:text-stone-100 transition-colors">Fault Tree</Link>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#session">Live Session</a>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/intellirev/profile" className="text-stone-400 hover:text-stone-100 text-sm font-medium transition-colors">View Profile</Link>
-            <Link to="/" className="bg-primary text-on-primary font-bold px-5 py-2 rounded-full hover:scale-95 transition-all duration-200 text-sm flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">dashboard</span> Dashboard
+
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link to="/intellirev/profile" className="hidden sm:block text-stone-400 hover:text-stone-100 text-sm font-medium transition-colors">Profile</Link>
+            <Link to="/login" title="Log out" className="p-2 rounded-full hover:bg-white/5 text-stone-400 transition-colors">
+              <span className="material-symbols-outlined text-[20px] md:text-[22px]">logout</span>
             </Link>
-            <Link to="/login" title="Log out" className="flex justify-center items-center p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant group">
-              <span className="material-symbols-outlined text-[22px] group-hover:text-error transition-colors duration-300">logout</span>
-            </Link>
+            <button 
+              className="lg:hidden p-2 text-stone-400"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+            </button>
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-background border-b border-white/5 p-6 space-y-4 animate-fadeIn">
+            <a className="block text-primary font-bold" href="#intellirev" onClick={() => setMobileMenuOpen(false)}>IntelliRev</a>
+            <a className="block text-stone-400" href="#dag" onClick={() => setMobileMenuOpen(false)}>Knowledge DAG</a>
+            <a className="block text-stone-400" href="#behavior-tree" onClick={() => setMobileMenuOpen(false)}>Behavior Tree</a>
+            <Link className="block text-stone-400" to="/fault-tree-demo" onClick={() => setMobileMenuOpen(false)}>Fault Tree</Link>
+            <Link className="block text-stone-400 font-bold text-primary" to="/intellirev/profile" onClick={() => setMobileMenuOpen(false)}>Your Profile</Link>
+          </div>
+        )}
       </nav>
 
-      <main className="max-w-screen-2xl mx-auto px-8 py-10 flex-grow w-full">
-        {}
-        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <main className="max-w-screen-2xl mx-auto px-4 md:px-8 py-6 md:py-10 flex-grow w-full">
+        <header className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-headline mb-2">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight font-headline mb-2 leading-tight">
               Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Curator'}.
             </h1>
-            <p className="text-on-surface-variant text-lg">Your cognitive resonance is at <span className="text-secondary font-bold">88.4%</span> capacity today.</p>
+            <p className="text-on-surface-variant text-base md:text-lg">Your cognitive resonance is at <span className="text-secondary font-bold">88.4%</span> capacity today.</p>
           </div>
         </header>
 
