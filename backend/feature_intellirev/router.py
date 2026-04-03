@@ -24,6 +24,7 @@ from .services import (
     search_service,
     summarizer_service,
     transcript_service,
+    calendar_service,
 )
 from .utils.pdf_parser import extract_text_from_pdf
 from .utils.text_cleaner import clean_text
@@ -86,7 +87,7 @@ async def upload_syllabus(
     except Exception as e:
         logger.warning(f"DB write failed (continuing without persistence): {e}")
 
-    return PlanResponse(user_id=user_id, plan=plan, topics=topics, topic_ids=topic_ids)
+    return PlanResponse(user_id=user_id, plan_id=plan_id, plan=plan, topics=topics, topic_ids=topic_ids)
 
 @router.get("/plan/{user_id}")
 async def get_plan(user_id: str):
@@ -602,7 +603,7 @@ async def upload_book(
     except Exception as e:
         logger.warning(f"Book DB write failed: {e}")
 
-    return PlanResponse(user_id=user_id, plan=plan, topics=topics, topic_ids=topic_ids)
+    return PlanResponse(user_id=user_id, plan_id=plan_id, plan=plan, topics=topics, topic_ids=topic_ids)
 
 @router.post("/qa")
 async def answer_question(
@@ -709,3 +710,28 @@ async def suggest_questions(topic_id: str):
             questions.append(f"What is {kw} and why is it important?")
 
     return {"questions": questions, "topic_name": topic_name}
+
+@router.post("/sync-calendar")
+async def sync_calendar(
+    user_id: str = Form(...),
+    plan_id: str = Form(...),
+    access_token: str = Form(...),
+    daily_slots: str = Form(...), # JSON string of daily_slots
+):
+    db = get_client()
+    try:
+        import json
+        slots_dict = json.loads(daily_slots)
+
+        # 1. Fetch the plan
+        plan_res = db.table("plans").select("schedule").eq("id", plan_id).single().execute()
+        if not plan_res.data:
+            raise HTTPException(status_code=404, detail="Plan not found.")
+        schedule = plan_res.data["schedule"]
+
+        # 2. Sync to Google Calendar
+        results = calendar_service.sync_study_plan(access_token, schedule, slots_dict)
+        return {"status": "success", "synced_events": results}
+    except Exception as e:
+        logger.error(f"Calendar sync failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -14,9 +14,10 @@ class TopicModel(BaseModel):
 
 class PlanResponse(BaseModel):
     user_id: str
+    plan_id: str
     plan: dict[str, list[str]]
     topics: list[str]
-    topic_ids: dict[str, str]  
+    topic_ids: dict[str, str]
 
 class VideoModel(BaseModel):
     video_id: str

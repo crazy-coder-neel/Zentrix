@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../supabase'
 import { API } from '../../api'
+import { useGoogleLogin } from '@react-oauth/google'
 
 
 const DAY_COLORS = [
@@ -25,6 +26,7 @@ export default function StudyPlanPage() {
 
   const [user, setUser] = useState(null)
   const [plan, setPlan] = useState(null)
+  const [planId, setPlanId] = useState('')
   const [topicIds, setTopicIds] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -37,6 +39,60 @@ export default function StudyPlanPage() {
     5: [{ start: "20:00", end: "22:00" }] 
   })
   const [isUploadingBooks, setIsUploadingBooks] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  const syncToCalendar = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsSyncing(true)
+      try {
+        const formData = new FormData()
+        formData.append('user_id', user?.id || 'guest_user_001')
+        formData.append('plan_id', planId)
+        formData.append('access_token', tokenResponse.access_token)
+        formData.append('daily_slots', JSON.stringify(dailySlots))
+
+        const res = await fetch(`${API}/intellirev/sync-calendar`, {
+          method: 'POST',
+          body: formData
+        })
+        
+        if (res.ok) {
+          alert('Successfully synced your 5-day plan to Google Calendar!')
+        }
+      } catch (err) {
+        console.error('Failed to sync calendar:', err)
+        alert('Calendar sync failed, but you can still start studying.')
+      } finally {
+        setIsSyncing(false)
+        completeConfirmation()
+      }
+    },
+    onError: (error) => {
+      console.error('Google Login Failed:', error)
+      alert('Google authentication failed.')
+    },
+    scope: 'https://www.googleapis.com/auth/calendar.events'
+  })
+
+  function confirmAndSync() {
+    syncToCalendar()
+  }
+
+  function completeConfirmation() {
+    setStep('ACTIVE')
+    localStorage.setItem('intellirev_study_phase', 'active')
+    
+    // Jump to first topic
+    if (plan) {
+      const firstDay = Object.keys(plan)[0]
+      const topics = plan[firstDay] || []
+      if (topics.length > 0) {
+        const firstTopicName = topics[0]
+        const firstTopicId = topicIds[firstTopicName]
+        navigate(`/intellirev/learn/${firstTopicId || 'demo'}?name=${encodeURIComponent(firstTopicName)}`)
+      }
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -51,6 +107,7 @@ export default function StudyPlanPage() {
         try {
           const data = JSON.parse(cached)
           setPlan(data.plan)
+          setPlanId(data.plan_id || '')
           setTopicIds(data.topic_ids || {})
           setLoading(false)
           return
@@ -60,6 +117,7 @@ export default function StudyPlanPage() {
         .then(r => r.ok ? r.json() : Promise.reject(r))
         .then(data => {
           setPlan(data.plan)
+          setPlanId(data.plan_id || '')
           setTopicIds(data.topic_ids || {})
           setLoading(false)
         })
@@ -89,15 +147,6 @@ export default function StudyPlanPage() {
     alert("Reference books attached! Your notes will now include textbook content.")
   }
 
-  const handleLearn = (topicName) => {
-    const topicId = topicIds[topicName]
-    navigate(`/intellirev/learn/${topicId || 'demo'}?name=${encodeURIComponent(topicName)}`)
-  }
-
-  const handleQuiz = (topicName) => {
-    const topicId = topicIds[topicName]
-    navigate(`/intellirev/quiz/${topicId || 'demo'}?name=${encodeURIComponent(topicName)}`)
-  }
 
   if (loading) return <LoadingScreen />
   if (error || !plan) return <ErrorScreen error={error} />
@@ -216,18 +265,40 @@ export default function StudyPlanPage() {
             ))}
           </div>
 
-          <button onClick={() => setStep('ACTIVE')} className="w-full bg-primary text-on-primary text-white py-5 rounded-3xl font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-            Confirm & Start Studying
-          </button>
-          <button onClick={() => setStep('TIMINGS')} className="w-full text-stone-500 text-sm mt-4 hover:text-stone-300">
-            ← Change timings
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={confirmAndSync}
+              disabled={isSyncing}
+              className="w-full bg-primary text-on-primary text-white py-5 rounded-3xl font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              <span className="material-symbols-outlined">{isSyncing ? 'sync' : 'calendar_month'}</span>
+              {isSyncing ? 'Syncing to Calendar...' : 'Confirm & Sync to Google'}
+            </button>
+            <button 
+              onClick={completeConfirmation} 
+              className="w-full bg-white/5 text-stone-400 py-4 rounded-3xl font-bold hover:bg-white/10 transition-all"
+            >
+              Start without Syncing
+            </button>
+            <button onClick={() => setStep('TIMINGS')} className="w-full text-stone-700 text-xs mt-2 hover:text-stone-300">
+              ← Change timings
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
-  const allTopics = Object.values(plan).flat()
+
+  const handleLearn = (topicName) => {
+    const topicId = topicIds[topicName]
+    navigate(`/intellirev/learn/${topicId || 'demo'}?name=${encodeURIComponent(topicName)}`)
+  }
+
+  const handleQuiz = (topicName) => {
+    const topicId = topicIds[topicName]
+    navigate(`/intellirev/quiz/${topicId || 'demo'}?name=${encodeURIComponent(topicName)}`)
+  }
   return (
     <div className="min-h-screen bg-background">
       <nav className="w-full top-0 sticky bg-background/90 backdrop-blur-xl z-50 border-b border-white/5">
