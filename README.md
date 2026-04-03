@@ -1,6 +1,6 @@
 # Σ Episteme — The Deterministic Learning Engine
 
-**Tagline:** *A deterministic AI that diagnoses why students fail algebra — and fixes the root cause.*
+**Tagline:** *A deterministic AI that diagnoses why students fail — and fixes the root cause.*
 
 ---
 
@@ -87,4 +87,4 @@ Our remediation logic is orchestrated by a **Behavior Tree**. It switches betwee
 ---
 
 ## 📝 License
-Built for the **Google Deepmind Agentic Coding Hackathon**. Copyright © 2026.
+Built for the **Codewiser Hackathon**. Copyright © 2026.
