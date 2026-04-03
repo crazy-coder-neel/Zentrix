@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
@@ -12,13 +12,14 @@ export default function LandingPage() {
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#features">Features</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#how-it-works">How It Works</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#system">System</a>
-            <a
-              href="/dashboard"
-              className="flex items-center gap-2 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border border-violet-500/30 text-violet-300 hover:text-violet-100 hover:border-violet-400/60 hover:bg-violet-600/25 transition-all duration-200 px-4 py-1.5 rounded-full"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,0.8)] animate-pulse"></span>
-              IntelliRev
-            </a>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/login" className="text-on-surface hover:text-primary font-headline font-bold text-sm transition-colors px-2">
+              Log In
+            </Link>
+            <Link to="/register" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-headline font-bold text-sm hover:scale-95 duration-200 ease-in-out transition-all shadow-lg shadow-primary/20">
+              Sign Up
+            </Link>
           </div>
         </div>
       </nav>
@@ -38,7 +39,7 @@ export default function LandingPage() {
                 Episteme is a deterministic AI system that diagnoses <strong className="text-on-surface">why</strong> students make mistakes in algebra — not just whether they're wrong — using Fault Trees, Knowledge DAGs, and Behavior Trees.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/dashboard" className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline font-bold text-lg hover:scale-95 duration-200 transition-all shadow-xl glow-orange inline-block">
+                <Link to="/register" className="bg-primary text-on-primary px-8 py-4 rounded-full font-headline font-bold text-lg hover:scale-95 duration-200 transition-all shadow-xl glow-orange inline-block">
                   Start Diagnosing
                 </Link>
                 <a href="#features" className="glass-card text-on-surface px-8 py-4 rounded-full font-headline font-bold text-lg hover:bg-white/10 transition-all">
@@ -253,8 +254,8 @@ export default function LandingPage() {
             <p className="text-on-surface-variant text-xl mb-12 max-w-2xl mx-auto">A deterministic AI system that diagnoses why students make mistakes in algebra and fixes the root cause using structured reasoning.</p>
             <div className="inline-flex items-center gap-4 bg-surface-container-high p-2 pl-6 rounded-full">
               <span className="text-on-surface font-medium text-sm">No LLMs. No hallucinations. Pure logic.</span>
-              <Link to="/dashboard" className="bg-primary text-on-primary px-8 py-3 rounded-full font-headline font-bold hover:bg-primary-container transition-all">
-                Launch Dashboard
+              <Link to="/register" className="bg-primary text-on-primary px-8 py-3 rounded-full font-headline font-bold hover:bg-primary-container transition-all">
+                Get Started
               </Link>
             </div>
           </div>

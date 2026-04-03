@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useSearchParams, Link, useNavigate } from 'react-router'
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -341,7 +341,7 @@ export default function LearnPage() {
                   <button 
                     onClick={handleIndexContent} 
                     disabled={selectedBooks.length === 0 || notesLoading}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary-dim text-on-primary disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-xl shadow-violet-600/20"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary text-on-primary hover:bg-primary-dim text-on-primary disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-xl shadow-primary/20"
                   >
                     {notesLoading ? 'Indexing...' : 'Index Content'}
                   </button>

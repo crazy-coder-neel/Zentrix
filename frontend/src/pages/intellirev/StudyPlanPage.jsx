@@ -1,23 +1,23 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useNavigate, Link } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USER_ID = 'guest_user_001'
 
 const DAY_COLORS = [
-  'from-violet-600 to-violet-700',
-  'from-indigo-600 to-indigo-700',
-  'from-purple-600 to-purple-700',
-  'from-fuchsia-600 to-fuchsia-700',
-  'from-violet-500 to-indigo-600',
+  'from-primary/20 to-primary/40',
+  'from-secondary/20 to-secondary/40',
+  'from-primary-dim/20 to-primary-dim/40',
+  'from-primary/10 to-secondary/20',
+  'from-secondary/10 to-primary/20',
 ]
 
 const DAY_BORDER = [
   'border-primary/30',
-  'border-indigo-500/30',
-  'border-purple-500/30',
-  'border-fuchsia-500/30',
-  'border-violet-400/30',
+  'border-secondary/30',
+  'border-primary-dim/30',
+  'border-primary-variant/30',
+  'border-secondary-dim/30',
 ]
 
 export default function StudyPlanPage() {

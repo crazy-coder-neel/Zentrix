@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react'
-import { Link, useNavigate } from 'react-router'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import BehaviorTreeVisuals from '../components/BehaviorTreeVisuals'
 import DashboardDAG from '../components/DashboardDAG'
 
@@ -60,6 +60,38 @@ export default function DashboardPage() {
     }
   }
 
+  const [masteryData, setMasteryData] = useState(null);
+  const [irtData, setIrtData] = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API}/api/mastery/default`).then(r => r.json()),
+      fetch(`${API}/api/irt/student/default`).then(r => r.json())
+    ]).then(([mastery, irt]) => {
+      setMasteryData(mastery);
+      setIrtData(irt);
+    }).catch(console.error);
+  }, []);
+
+  const numConcepts = masteryData ? Object.keys(masteryData.mastery || {}).length : 0;
+  const avgMastery = numConcepts > 0 
+    ? Object.values(masteryData.mastery).reduce((a, b) => a + b, 0) / numConcepts 
+    : 0.0;
+  const masteryPercentage = (avgMastery * 100).toFixed(1);
+
+  const brierScore = irtData ? irtData.rolling_brier_score.toFixed(3) : 0.12;
+  const calibrationState = irtData ? irtData.calibration_state : "well_calibrated";
+  
+  const getCalibrationDesc = (state) => {
+    switch(state) {
+        case "well_calibrated": return "Confidence calibration is excellent. Student predicts own performance with high accuracy.";
+        case "overconfident": return "Student exhibits high confidence despite frequent errors. Prone to mistakes rather than slips.";
+        case "underconfident": return "Student lacks confidence despite high competence. Needs encouragement to reduce anxiety.";
+        case "poor_performer": return "Student is struggling and correctly identifies their low performance.";
+        default: return "Analyzing cognitive calibration metrics...";
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* TopAppBar */}
@@ -70,12 +102,16 @@ export default function DashboardPage() {
             <a className="text-primary font-bold border-b-2 border-primary pb-1" href="#intellirev">IntelliRev</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#dag">Knowledge DAG</a>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#behavior-tree">Behavior Tree</a>
+            <Link to="/fault-tree-demo" className="text-stone-400 hover:text-stone-100 transition-colors">Fault Tree</Link>
             <a className="text-stone-400 hover:text-stone-100 transition-colors" href="#session">Live Session</a>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/intellirev/profile" className="text-stone-400 hover:text-stone-100 text-sm font-medium transition-colors">View Profile</Link>
             <Link to="/" className="bg-primary text-on-primary font-bold px-5 py-2 rounded-full hover:scale-95 transition-all duration-200 text-sm flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">dashboard</span> Dashboard
+            </Link>
+            <Link to="/login" title="Log out" className="flex justify-center items-center p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant group">
+              <span className="material-symbols-outlined text-[22px] group-hover:text-error transition-colors duration-300">logout</span>
             </Link>
           </div>
         </div>
@@ -203,9 +239,10 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Drag nodes to explore</span>
-                <button className="bg-surface-variant/50 hover:bg-surface-variant p-2 rounded-xl transition-all">
-                  <span className="material-symbols-outlined text-sm">fullscreen</span>
-                </button>
+                <Link to="/knowledge-dag" className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-xl transition-all text-xs font-bold flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  Explore
+                </Link>
               </div>
             </div>
             <div className="px-8 pb-2"><DashboardDAG /></div>
@@ -225,26 +262,29 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <span className="material-symbols-outlined text-3xl p-3 bg-on-tertiary-fixed/5 rounded-2xl">trending_up</span>
-                  <span className="font-bold text-xl">82%</span>
+                  <span className="font-bold text-xl">{masteryPercentage}%</span>
                 </div>
                 <h3 className="text-2xl font-bold font-headline mb-2">Mastery Score</h3>
-                <p className="text-sm opacity-80 leading-relaxed">Composite: 0.5 × test + 0.3 × practice + 0.2 × retention.</p>
+                <p className="text-sm opacity-80 leading-relaxed">Composite: Bayesian Knowledge Tracing average across {numConcepts} tracked concepts.</p>
+                <p className="text-sm opacity-80 leading-relaxed">0.5 × test + 0.3 × practice + 0.2 × retention.</p>
               </div>
               <div className="h-1.5 w-full bg-on-tertiary-fixed/10 rounded-full mt-6">
-                <div className="h-full w-[82%] bg-on-tertiary-fixed rounded-full transition-all duration-1000"></div>
+                <div className="h-full bg-on-tertiary-fixed rounded-full transition-all duration-1000" style={{width: `${masteryPercentage}%`}}></div>
               </div>
             </div>
-            <div className="bg-secondary text-on-secondary-fixed rounded-3xl p-8 flex flex-col justify-between min-h-[240px] shadow-2xl transition-transform hover:-translate-y-1 glow-yellow">
+
+            <div className={`text-on-secondary-fixed rounded-3xl p-8 flex flex-col justify-between min-h-[240px] shadow-2xl transition-transform hover:-translate-y-1 glow-yellow ${calibrationState === 'overconfident' ? 'bg-error text-on-error' : 'bg-secondary'}`}>
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <span className="material-symbols-outlined text-3xl p-3 bg-on-secondary-fixed/5 rounded-2xl">speed</span>
-                  <span className="font-bold text-xl">0.12</span>
+                  <span className="font-bold text-xl">{brierScore}</span>
                 </div>
                 <h3 className="text-2xl font-bold font-headline mb-2">Brier Score</h3>
-                <p className="text-sm opacity-80 leading-relaxed">Confidence calibration is excellent.</p>
+                <p className="text-sm opacity-80 leading-relaxed">{getCalibrationDesc(calibrationState)}</p>
+                <div className="mt-2 inline-block px-3 py-1 bg-background/20 rounded-full text-xs font-bold uppercase tracking-wider">{calibrationState.replace('_', ' ')}</div>
               </div>
               <div className="h-1.5 w-full bg-on-secondary-fixed/10 rounded-full mt-6">
-                <div className="h-full w-[88%] bg-on-secondary-fixed rounded-full transition-all duration-1000"></div>
+                <div className="h-full bg-on-secondary-fixed rounded-full transition-all duration-1000" style={{width: `${Math.max(10, 100 - (brierScore * 100))}%`}}></div>
               </div>
             </div>
           </section>
@@ -320,12 +360,45 @@ export default function DashboardPage() {
             </button>
           </section>
         </div>
+
+        {/* ═══ Featured Resource ═══ */}
+        <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 relative h-[280px] rounded-3xl overflow-hidden group">
+            <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFa6l8kG6W4Np_nNChY5R4zexO21KnMakjRFPngzfRtMBgMA4mh4gbQO2UGRbIjgwc1gufuI1Byv_0d1PCv-p6iQQ7li0g3p6aVOuGGPd4B7YAqhMqiRsfTyRLn5ZqXoHTCaSr9ZOn8Pzv9ns-AXHg4HbVQXVUpAxLpEwPEy3__TO1R4Rm7CDFdW2VAbhl3T8vO8JDqVCVgZlHu6xs1tzDP_RDhZsKVuaMmFslW8BtrdsOtxURjFHrRyor6HzoIPb3AiWyKrirGbJR" alt="Neural network visualization" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-8">
+              <span className="bg-primary px-3 py-1 rounded-full text-[10px] font-black text-on-primary uppercase tracking-wider mb-3 inline-block">Explainability Engine</span>
+              <h2 className="text-2xl font-bold font-headline mb-2 max-w-md">Full Decision Trace</h2>
+              <p className="text-on-surface-variant max-w-sm text-sm">Every diagnosis produces a complete trace: Fault Tree path, blame propagation, mastery reasoning, and the Behavior Tree decision.</p>
+            </div>
+          </div>
+          <div className="bg-primary text-on-primary rounded-3xl p-8 flex flex-col justify-between glow-orange">
+            <div>
+              <span className="material-symbols-outlined text-4xl mb-4">science</span>
+              <h3 className="text-2xl font-bold font-headline mb-3">Engine Features</h3>
+              <div className="space-y-2 text-on-primary/80 text-sm mb-6">
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> 18 concept knowledge graph</div>
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> 15 diagnostic questions</div>
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> Auto-generated fault trees</div>
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">check_circle</span> Blame backpropagation DAG</div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Link to="/fault-tree-demo" className="bg-on-primary/10 hover:bg-on-primary/20 text-on-primary text-center py-2.5 rounded-xl text-sm font-bold transition-all">
+                Try Fault Tree →
+              </Link>
+              <Link to="/knowledge-dag" className="bg-on-primary/10 hover:bg-on-primary/20 text-on-primary text-center py-2.5 rounded-xl text-sm font-bold transition-all">
+                Explore DAG →
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* FAB */}
-      <button className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
+      <Link to="/quiz-generator" title="Start New Diagnostic" className="fixed bottom-8 right-8 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,143,111,0.4)] hover:scale-110 transition-transform active:scale-95 group z-50">
         <span className="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add</span>
-      </button>
+      </Link>
     </div>
   )
 }

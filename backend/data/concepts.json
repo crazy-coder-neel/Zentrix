@@ -1,0 +1,146 @@
+[
+  {
+    "id": "C01",
+    "name": "Number Line & Signed Numbers",
+    "tier": 0,
+    "mastery_threshold": 75,
+    "bloom_level": 1,
+    "description": "Understanding positive and negative numbers on a number line, and basic operations with signed numbers."
+  },
+  {
+    "id": "C02",
+    "name": "Order of Operations (PEMDAS)",
+    "tier": 0,
+    "mastery_threshold": 75,
+    "bloom_level": 1,
+    "description": "Applying the correct order of operations: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction."
+  },
+  {
+    "id": "C03",
+    "name": "Variable Notation & Substitution",
+    "tier": 0,
+    "mastery_threshold": 75,
+    "bloom_level": 2,
+    "description": "Understanding variables as placeholders and substituting values into expressions."
+  },
+  {
+    "id": "C04",
+    "name": "Simplifying Algebraic Expressions",
+    "tier": 1,
+    "mastery_threshold": 75,
+    "bloom_level": 2,
+    "description": "Combining terms and simplifying algebraic expressions."
+  },
+  {
+    "id": "C05",
+    "name": "Like Terms — Identification & Combination",
+    "tier": 1,
+    "mastery_threshold": 75,
+    "bloom_level": 2,
+    "description": "Identifying and combining like terms in algebraic expressions."
+  },
+  {
+    "id": "C06",
+    "name": "Distributive Property",
+    "tier": 1,
+    "mastery_threshold": 75,
+    "bloom_level": 3,
+    "description": "Applying the distributive property: a(b + c) = ab + ac."
+  },
+  {
+    "id": "C07",
+    "name": "Solving One-Step Equations",
+    "tier": 2,
+    "mastery_threshold": 75,
+    "bloom_level": 3,
+    "description": "Solving equations requiring one operation to isolate the variable."
+  },
+  {
+    "id": "C08",
+    "name": "Solving Two-Step Equations",
+    "tier": 2,
+    "mastery_threshold": 75,
+    "bloom_level": 3,
+    "description": "Solving equations requiring two operations in the correct order."
+  },
+  {
+    "id": "C09",
+    "name": "Solving Equations with Variables on Both Sides",
+    "tier": 2,
+    "mastery_threshold": 75,
+    "bloom_level": 4,
+    "description": "Solving equations where the variable appears on both sides of the equals sign."
+  },
+  {
+    "id": "C10",
+    "name": "Equations with Brackets / Distribution",
+    "tier": 2,
+    "mastery_threshold": 75,
+    "bloom_level": 4,
+    "description": "Solving equations that require distributing before solving."
+  },
+  {
+    "id": "C11",
+    "name": "Slope — Definition & Calculation",
+    "tier": 3,
+    "mastery_threshold": 75,
+    "bloom_level": 3,
+    "description": "Understanding slope as rise/run and calculating it from two points."
+  },
+  {
+    "id": "C12",
+    "name": "Slope-Intercept Form y = mx + b",
+    "tier": 3,
+    "mastery_threshold": 75,
+    "bloom_level": 3,
+    "description": "Understanding and using the slope-intercept form of a linear equation."
+  },
+  {
+    "id": "C13",
+    "name": "Graphing Linear Equations",
+    "tier": 3,
+    "mastery_threshold": 75,
+    "bloom_level": 4,
+    "description": "Plotting linear equations on the coordinate plane."
+  },
+  {
+    "id": "C14",
+    "name": "Point-Slope Form",
+    "tier": 3,
+    "mastery_threshold": 75,
+    "bloom_level": 4,
+    "description": "Writing and using point-slope form: y - y1 = m(x - x1)."
+  },
+  {
+    "id": "C15",
+    "name": "System Setup — Recognising Structure",
+    "tier": 4,
+    "mastery_threshold": 75,
+    "bloom_level": 4,
+    "description": "Recognizing when a problem requires a system of equations and setting it up correctly."
+  },
+  {
+    "id": "C16",
+    "name": "Substitution Method",
+    "tier": 4,
+    "mastery_threshold": 75,
+    "bloom_level": 5,
+    "description": "Solving systems of equations using the substitution method."
+  },
+  {
+    "id": "C17",
+    "name": "Elimination Method",
+    "tier": 4,
+    "mastery_threshold": 75,
+    "bloom_level": 5,
+    "description": "Solving systems of equations using the elimination (addition/subtraction) method."
+  },
+  {
+    "id": "C18",
+    "name": "Interpreting System Solutions",
+    "tier": 4,
+    "mastery_threshold": 75,
+    "bloom_level": 6,
+    "description": "Interpreting the solution of a system as one solution, no solution, or infinitely many."
+  }
+]

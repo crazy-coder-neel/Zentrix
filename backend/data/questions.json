@@ -1,0 +1,212 @@
+[
+  {
+    "id": "Q01_001",
+    "concept_id": "C01",
+    "stem": "Evaluate: -5 - (-3)",
+    "correct_answer": "B",
+    "avg_time_correct_ms": 12000,
+    "avg_time_incorrect_ms": 10000,
+    "options": {
+      "A": { "text": "-8", "error_tag": "M01", "error_description": "Treated subtracting a negative as subtraction" },
+      "B": { "text": "-2", "error_tag": null, "error_description": null },
+      "C": { "text": "2", "error_tag": "M02", "error_description": "Treated subtraction as commutative (reversed operands)" },
+      "D": { "text": "8", "error_tag": "M01", "error_description": "Flipped both signs incorrectly" }
+    }
+  },
+  {
+    "id": "Q02_001",
+    "concept_id": "C02",
+    "stem": "Evaluate: 3 + 4 X 2",
+    "correct_answer": "C",
+    "avg_time_correct_ms": 10000,
+    "avg_time_incorrect_ms": 8000,
+    "options": {
+      "A": { "text": "14", "error_tag": "M03", "error_description": "Applied operations left-to-right ignoring precedence" },
+      "B": { "text": "9", "error_tag": "M03", "error_description": "Partial left-to-right evaluation" },
+      "C": { "text": "11", "error_tag": null, "error_description": null },
+      "D": { "text": "24", "error_tag": "M03", "error_description": "Added all numbers then multiplied" }
+    }
+  },
+  {
+    "id": "Q04_001",
+    "concept_id": "C04",
+    "stem": "Simplify: 3x + 2 + 5x - 1",
+    "correct_answer": "A",
+    "avg_time_correct_ms": 15000,
+    "avg_time_incorrect_ms": 12000,
+    "options": {
+      "A": { "text": "8x + 1", "error_tag": null, "error_description": null },
+      "B": { "text": "9x", "error_tag": "M05", "error_description": "Added unlike terms (combined 8x and 1 into 9x)" },
+      "C": { "text": "8x + 3", "error_tag": "M05", "error_description": "Incorrectly combined constants (2 + 1 instead of 2 - 1)" },
+      "D": { "text": "8x - 1", "error_tag": "M05", "error_description": "Dropped the +2 constant entirely" }
+    }
+  },
+  {
+    "id": "Q06_001",
+    "concept_id": "C06",
+    "stem": "Expand: 3(x - 4)",
+    "correct_answer": "D",
+    "avg_time_correct_ms": 15000,
+    "avg_time_incorrect_ms": 10000,
+    "options": {
+      "A": { "text": "3x - 4", "error_tag": "M07", "error_description": "Distributed only to the first term" },
+      "B": { "text": "3x + 12", "error_tag": "M08", "error_description": "Sign error on distribution: 3×(-4) became +12" },
+      "C": { "text": "x - 12", "error_tag": "M07", "error_description": "Dropped the 3 from 3x but distributed to second term" },
+      "D": { "text": "3x - 12", "error_tag": null, "error_description": null }
+    }
+  },
+  {
+    "id": "Q06_002",
+    "concept_id": "C06",
+    "stem": "Expand: -(2x + 5)",
+    "correct_answer": "B",
+    "avg_time_correct_ms": 18000,
+    "avg_time_incorrect_ms": 14000,
+    "options": {
+      "A": { "text": "-2x + 5", "error_tag": "M08", "error_description": "Distributed negative sign only to first term" },
+      "B": { "text": "-2x - 5", "error_tag": null, "error_description": null },
+      "C": { "text": "2x - 5", "error_tag": "M08", "error_description": "Flipped signs incorrectly on both terms" },
+      "D": { "text": "2x + 5", "error_tag": "M08", "error_description": "Ignored the negative sign entirely" }
+    }
+  },
+  {
+    "id": "Q07_001",
+    "concept_id": "C07",
+    "stem": "Solve for x: x + 7 = 12",
+    "correct_answer": "A",
+    "avg_time_correct_ms": 10000,
+    "avg_time_incorrect_ms": 8000,
+    "options": {
+      "A": { "text": "x = 5", "error_tag": null, "error_description": null },
+      "B": { "text": "x = 19", "error_tag": "M09", "error_description": "Added 7 to both sides instead of subtracting" },
+      "C": { "text": "x = -5", "error_tag": "M01", "error_description": "Sign error when isolating variable" },
+      "D": { "text": "x = 7", "error_tag": "M09", "error_description": "Divided only one side when isolating" }
+    }
+  },
+  {
+    "id": "Q08_001",
+    "concept_id": "C08",
+    "stem": "Solve for x: 2x + 3 = 11",
+    "correct_answer": "C",
+    "avg_time_correct_ms": 20000,
+    "avg_time_incorrect_ms": 16000,
+    "options": {
+      "A": { "text": "x = 7", "error_tag": "M10", "error_description": "Divided 14 by 2 but forgot to subtract 3 first" },
+      "B": { "text": "x = 5.5", "error_tag": "M10", "error_description": "Divided 11 by 2 without subtracting 3 first" },
+      "C": { "text": "x = 4", "error_tag": null, "error_description": null },
+      "D": { "text": "x = 1", "error_tag": "M10", "error_description": "Subtracted then divided in wrong order" }
+    }
+  },
+  {
+    "id": "Q09_001",
+    "concept_id": "C09",
+    "stem": "Solve for x: 3x + 2 = x + 10",
+    "correct_answer": "B",
+    "avg_time_correct_ms": 30000,
+    "avg_time_incorrect_ms": 25000,
+    "options": {
+      "A": { "text": "x = 6", "error_tag": "M11", "error_description": "Moved variable term but kept same sign" },
+      "B": { "text": "x = 4", "error_tag": null, "error_description": null },
+      "C": { "text": "x = 3", "error_tag": "M11", "error_description": "Added x terms instead of subtracting" },
+      "D": { "text": "x = 2", "error_tag": "M05", "error_description": "Combined unlike terms across equals sign" }
+    }
+  },
+  {
+    "id": "Q09_002",
+    "concept_id": "C09",
+    "stem": "Solve for x: 4x - 3 = 2x + 9",
+    "correct_answer": "A",
+    "avg_time_correct_ms": 35000,
+    "avg_time_incorrect_ms": 28000,
+    "options": {
+      "A": { "text": "x = 6", "error_tag": null, "error_description": null },
+      "B": { "text": "x = -6", "error_tag": "M11", "error_description": "Moved variable without sign flip" },
+      "C": { "text": "x = 3", "error_tag": "M10", "error_description": "Divided before subtracting constant" },
+      "D": { "text": "x = 1.5", "error_tag": "M05", "error_description": "Combined unlike terms" }
+    }
+  },
+  {
+    "id": "Q11_001",
+    "concept_id": "C11",
+    "stem": "Find the slope between points (2, 3) and (6, 11).",
+    "correct_answer": "A",
+    "avg_time_correct_ms": 25000,
+    "avg_time_incorrect_ms": 20000,
+    "options": {
+      "A": { "text": "2", "error_tag": null, "error_description": null },
+      "B": { "text": "0.5", "error_tag": "M13", "error_description": "Inverted rise/run (used Δx/Δy instead of Δy/Δx)" },
+      "C": { "text": "-2", "error_tag": "M14", "error_description": "Sign error with coordinates" },
+      "D": { "text": "4", "error_tag": "M13", "error_description": "Used only the rise (Δy) without dividing by run" }
+    }
+  },
+  {
+    "id": "Q12_001",
+    "concept_id": "C12",
+    "stem": "What is the y-intercept of y = 3x + 5?",
+    "correct_answer": "C",
+    "avg_time_correct_ms": 12000,
+    "avg_time_incorrect_ms": 10000,
+    "options": {
+      "A": { "text": "3", "error_tag": "M15", "error_description": "Confused slope (m) with y-intercept (b)" },
+      "B": { "text": "(5, 0)", "error_tag": "M16", "error_description": "Treated y-intercept as x-intercept point" },
+      "C": { "text": "5", "error_tag": null, "error_description": null },
+      "D": { "text": "(3, 5)", "error_tag": "M15", "error_description": "Confused m and b as a coordinate pair" }
+    }
+  },
+  {
+    "id": "Q15_001",
+    "concept_id": "C15",
+    "stem": "How many equations do you need to solve a system with 2 unknowns?",
+    "correct_answer": "B",
+    "avg_time_correct_ms": 8000,
+    "avg_time_incorrect_ms": 6000,
+    "options": {
+      "A": { "text": "1", "error_tag": "M19", "error_description": "Thinks one equation with two unknowns is solvable" },
+      "B": { "text": "2", "error_tag": null, "error_description": null },
+      "C": { "text": "3", "error_tag": null, "error_description": null },
+      "D": { "text": "It depends on the equation", "error_tag": "M19", "error_description": "Unsure about system structure requirements" }
+    }
+  },
+  {
+    "id": "Q16_001",
+    "concept_id": "C16",
+    "stem": "Solve using substitution: y = 2x and 3x + y = 10. What is x?",
+    "correct_answer": "C",
+    "avg_time_correct_ms": 40000,
+    "avg_time_incorrect_ms": 35000,
+    "options": {
+      "A": { "text": "x = 5", "error_tag": "M20", "error_description": "Substituted y=2x back into y=2x instead of the other equation" },
+      "B": { "text": "x = 10", "error_tag": "M20", "error_description": "Ignored the substitution step entirely" },
+      "C": { "text": "x = 2", "error_tag": null, "error_description": null },
+      "D": { "text": "x = 3", "error_tag": "M20", "error_description": "Arithmetic error after correct substitution" }
+    }
+  },
+  {
+    "id": "Q17_001",
+    "concept_id": "C17",
+    "stem": "Eliminate y: 2x + y = 7 and x - y = 2. What is x?",
+    "correct_answer": "B",
+    "avg_time_correct_ms": 35000,
+    "avg_time_incorrect_ms": 30000,
+    "options": {
+      "A": { "text": "x = 5", "error_tag": "M23", "error_description": "Subtracted equations instead of adding to eliminate y" },
+      "B": { "text": "x = 3", "error_tag": null, "error_description": null },
+      "C": { "text": "x = 2", "error_tag": "M22", "error_description": "Multiplied only one equation's coefficient" },
+      "D": { "text": "x = 9", "error_tag": "M23", "error_description": "Added x-values from both equations without eliminating" }
+    }
+  },
+  {
+    "id": "Q18_001",
+    "concept_id": "C18",
+    "stem": "The system x + y = 3 and 2x + 2y = 6 has:",
+    "correct_answer": "D",
+    "avg_time_correct_ms": 30000,
+    "avg_time_incorrect_ms": 25000,
+    "options": {
+      "A": { "text": "No solution", "error_tag": "M24", "error_description": "Confused 'no solution' with 'infinitely many'" },
+      "B": { "text": "Exactly one solution", "error_tag": "M24", "error_description": "Did not recognize that the equations are multiples" },
+      "C": { "text": "Exactly two solutions", "error_tag": "M24", "error_description": "Two equations must mean two solutions" },
+      "D": { "text": "Infinitely many solutions", "error_tag": null, "error_description": null }
+    }
+  }
+]

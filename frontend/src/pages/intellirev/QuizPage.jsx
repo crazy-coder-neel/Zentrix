@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, Link, useNavigate } from 'react-router'
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USER_ID = 'guest_user_001'
 
 const DEMO_QUESTIONS = [
-  { id: 'q1', question_text: 'What does ___ stand for in the context of neural networks?', question_type: 'fill_blank', answer: 'CNN', options: null },
+  { id: 'q1', question_text: 'What are the main components of a Neural Network?', question_type: 'mcq', answer: 'Input, Hidden, and Output layers', options: ['Input and Output only', 'Input, Hidden, and Output layers', 'Neurons and wires', 'Software and Hardware'] },
   { id: 'q2', question_text: 'Which of the following best describes gradient descent?', question_type: 'mcq', answer: 'An optimization algorithm that minimizes loss', options: ['A sorting algorithm', 'An optimization algorithm that minimizes loss', 'A data preprocessing step', 'A type of neural network'] },
-  { id: 'q3', question_text: '___ is a technique used to prevent overfitting in neural networks.', question_type: 'fill_blank', answer: 'Dropout', options: null },
+  { id: 'q3', question_text: 'Which technique is used to prevent overfitting by randomly dropping neurons?', question_type: 'mcq', answer: 'Dropout', options: ['Batch Normalization', 'Dropout', 'Data Augmentation', 'Early Stopping'] },
   { id: 'q4', question_text: 'Which activation function outputs values between 0 and 1?', question_type: 'mcq', answer: 'Sigmoid', options: ['ReLU', 'Tanh', 'Sigmoid', 'Softmax'] },
-  { id: 'q5', question_text: 'The process of adjusting model weights using labeled data is called ___.', question_type: 'fill_blank', answer: 'training', options: null },
+  { id: 'q5', question_text: 'The process of adjusting model weights using labeled data is called:', question_type: 'mcq', answer: 'Supervised Learning', options: ['Unsupervised Learning', 'Reinforcement Learning', 'Supervised Learning', 'Clustering'] },
 ]
 
 export default function QuizPage() {

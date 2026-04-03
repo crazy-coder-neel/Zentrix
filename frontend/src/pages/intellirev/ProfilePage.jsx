@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USER_ID = 'guest_user_001'
@@ -29,9 +29,9 @@ function ConsistencyGrid({ activity }) {
 
   const getColor = (count) => {
     if (count === 0) return 'bg-white/5'
-    if (count === 1) return 'bg-primary-container/60'
-    if (count === 2) return 'bg-violet-700/70'
-    if (count === 3) return 'bg-primary-dim text-on-primary/80'
+    if (count === 1) return 'bg-primary-dim/30'
+    if (count === 2) return 'bg-primary-dim/50'
+    if (count === 3) return 'bg-primary-dim/70'
     return 'bg-primary text-on-primary'
   }
 
